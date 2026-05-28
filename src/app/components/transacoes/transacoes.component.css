@@ -1,22 +1,31 @@
 .tabs {
     display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
+    gap: 0.75rem;
+    flex-wrap: wrap;
 }
 
 .tabs a {
-    padding: 0.75rem 1.25rem;
-    border-radius: 8px;
+    padding: 0.85rem 1.2rem;
+    border-radius: 999px;
     text-decoration: none;
-    color: #1976d2;
-    border: 1px solid #1976d2;
+    color: #334155;
+    background: #f8fafc;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    transition: all 0.2s ease;
 }
 
-.tabs a.active {
-    background: #1976d2;
+.tabs a.active,
+.tabs a:hover {
+    background: #2563eb;
     color: white;
 }
 
 .card {
     margin-bottom: 1rem;
+}
+
+@media (max-width: 640px) {
+    .tabs {
+        flex-direction: column;
+    }
 }

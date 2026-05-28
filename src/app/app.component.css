@@ -1,10 +1,16 @@
 /* App Component Styles */
-.app-container {
+.app-shell {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
 }
 
-.container {
+main.container {
     flex: 1;
+}
+
+footer {
+    color: #475569;
+    font-size: 0.95rem;
+    padding: 1.5rem 0;
 }

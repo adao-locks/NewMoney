@@ -1,11 +1,13 @@
 /* Contato Component Styles */
-.contato {
+.page-section {
+    display: grid;
+    gap: 1.5rem;
     animation: zoomIn 0.5s ease-in;
 }
 
 @keyframes zoomIn {
     from {
-        transform: scale(0.95);
+        transform: scale(0.98);
         opacity: 0;
     }
 
@@ -15,62 +17,55 @@
     }
 }
 
-.formulario {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+.form-grid {
+    display: grid;
+    gap: 1rem;
 }
 
-.form-group {
+.field-group {
     display: flex;
     flex-direction: column;
+    gap: 0.5rem;
 }
 
-.form-group label {
+.field-group.full-width {
+    grid-column: 1 / -1;
+}
+
+label {
     font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: #333;
+    color: #334155;
 }
 
-.form-group input,
-.form-group textarea {
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1rem;
-    font-family: inherit;
-    transition: border-color 0.3s;
+input,
+textarea {
+    border-radius: 16px;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    background: #f8fafc;
+    padding: 1rem;
 }
 
-.form-group input:focus,
-.form-group textarea:focus {
-    outline: none;
-    border-color: #1976d2;
-    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
-}
-
-button {
-    padding: 0.75rem 1.5rem;
-    margin-right: 0.5rem;
+.actions {
+    display: flex;
+    gap: 1rem;
     margin-top: 1rem;
 }
 
-.mensagem-sucesso {
-    background-color: #4caf50;
-    color: white;
-    padding: 1rem;
-    border-radius: 4px;
-    margin-bottom: 1rem;
-    font-weight: 600;
-    text-align: center;
-}
-
-.card h3 {
-    color: #1976d2;
-    margin-bottom: 1rem;
+.mensagem-sucesso,
+.message-box {
+    background: #dcfce7;
+    color: #166534;
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    border-left: 4px solid #22c55e;
 }
 
 .card p {
-    margin-bottom: 0.5rem;
-    line-height: 1.6;
+    line-height: 1.8;
+}
+
+@media (max-width: 840px) {
+    .grid-card {
+        grid-template-columns: 1fr;
+    }
 }

@@ -1,55 +1,75 @@
-.form .row {
-    display: flex;
+.form-grid {
+    display: grid;
     gap: 1rem;
-    flex-wrap: wrap;
-    align-items: flex-end
 }
 
-.form label {
+.field-group {
     display: flex;
     flex-direction: column;
-    flex: 1;
-    min-width: 200px
+    gap: 0.5rem;
+}
+
+.field-group.full-width {
+    grid-column: 1 / -1;
 }
 
 .actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
-    margin-top: 1rem
+    margin-top: 1rem;
 }
 
-.info {
+.actions-row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap
+    gap: 0.75rem;
+    justify-content: flex-end;
+    flex-wrap: wrap;
 }
 
 .muted {
-    color: #777;
-    font-size: .9rem
+    color: #64748b;
+    font-size: 0.95rem;
 }
 
-.negative {
-    color: #c62828;
-    font-weight: 700
+.status-negative {
+    color: #991b1b;
+    font-weight: 700;
 }
 
 button {
-    margin-left: .5rem
+    min-width: 110px;
 }
 
 button.danger {
-    background: #c62828;
-    color: white
+    background: #dc2626;
+}
+
+.list-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.list-row:last-child {
+    border-bottom: none;
 }
 
 ul {
     list-style: none;
-    padding: 0
+    padding: 0;
 }
 
-li {
-    padding: .75rem 0;
-    border-bottom: 1px solid #eee
+@media (max-width: 840px) {
+    .list-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .actions-row {
+        justify-content: flex-start;
+    }
 }

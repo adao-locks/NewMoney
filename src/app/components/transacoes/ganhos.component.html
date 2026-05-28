@@ -1,42 +1,46 @@
-<div class="card">
-    <h2>Cadastro de Ganhos</h2>
-    <form (ngSubmit)="save()" class="form">
-        <div class="row">
-            <label>
-                Data
-                <input type="date" [(ngModel)]="form.date" name="date" required />
-            </label>
-            <label>
-                Descrição
-                <input type="text" [(ngModel)]="form.description" name="description" required />
-            </label>
-            <label>
-                Valor
-                <input type="number" step="0.01" [(ngModel)]="form.amount" name="amount" required />
-            </label>
+<div class="page-section">
+    <section class="page-header">
+        <div>
+            <h1>Ganhos</h1>
+            <p class="section-intro">Registre seus ganhos e visualize rapidamente suas entradas.</p>
         </div>
-        <div class="actions">
-            <button type="submit">{{ isEditing ? 'Atualizar' : 'Adicionar' }}</button>
-            <button type="button" (click)="resetForm()">Cancelar</button>
-        </div>
-    </form>
-</div>
+    </section>
 
-<div class="card">
-    <h3>Ganhos Cadastrados</h3>
-    <ul>
-        <li *ngFor="let item of items">
-            <div class="info">
-                <div>
-                    <strong>{{ item.description }}</strong>
-                    <div class="muted">{{ item.date | date:'shortDate' }}</div>
-                </div>
-                <div>
-                    <span class="positive">+{{ item.amount | number:'1.2-2' }}</span>
-                    <button (click)="edit(item)">Editar</button>
-                    <button class="danger" (click)="remove(item.id)">Excluir</button>
-                </div>
+    <div class="card">
+        <h2>Adicionar Ganho</h2>
+        <form (ngSubmit)="save()" class="form-grid">
+            <div class="field-group">
+                <label for="date">Data</label>
+                <input type="date" id="date" [(ngModel)]="form.date" name="date" required />
             </div>
-        </li>
-    </ul>
+            <div class="field-group">
+                <label for="description">Descrição</label>
+                <input type="text" id="description" [(ngModel)]="form.description" name="description" required />
+            </div>
+            <div class="field-group">
+                <label for="amount">Valor</label>
+                <input type="number" step="0.01" id="amount" [(ngModel)]="form.amount" name="amount" required />
+            </div>
+            <div class="field-group full-width actions">
+                <button type="submit">{{ isEditing ? 'Atualizar' : 'Adicionar' }}</button>
+                <button type="button" class="secondary" (click)="resetForm()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>Ganhos Cadastrados</h3>
+        <div *ngIf="items.length === 0" class="message-box">Nenhum ganho registrado ainda.</div>
+        <div *ngFor="let item of items" class="list-row">
+            <div class="primary">
+                <strong>{{ item.description }}</strong>
+                <span class="muted">{{ item.date | date:'shortDate' }}</span>
+            </div>
+            <div class="status-positive">+{{ item.amount | number:'1.2-2' }}</div>
+            <div class="actions-row">
+                <button type="button" class="secondary" (click)="edit(item)">Editar</button>
+                <button type="button" class="danger" (click)="remove(item.id)">Excluir</button>
+            </div>
+        </div>
+    </div>
 </div>

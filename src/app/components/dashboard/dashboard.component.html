@@ -1,27 +1,44 @@
-<div class="card">
-    <h2>Dashboard Financeiro</h2>
-    <div class="grid">
-        <div class="tile ganho">
+<div class="page-section">
+    <section class="page-header">
+        <div>
+            <h1>Dashboard Financeiro</h1>
+            <p class="section-intro">Aqui você acompanha seus ganhos, gastos e saldo em tempo real, com histórico de
+                movimentações recentes.</p>
+        </div>
+    </section>
+
+    <div class="grid-card">
+        <div class="card tile ganho">
             <h3>Ganhos</h3>
             <p class="value">{{ summary.ganhos | number:'1.2-2' }}</p>
         </div>
-        <div class="tile gasto">
+        <div class="card tile gasto">
             <h3>Gastos</h3>
             <p class="value">{{ summary.gastos | number:'1.2-2' }}</p>
         </div>
-        <div class="tile saldo">
+        <div class="card tile saldo">
             <h3>Saldo</h3>
             <p class="value">{{ summary.balance | number:'1.2-2' }}</p>
         </div>
     </div>
-</div>
 
-<div class="card">
-    <h3>Últimas Movimentações</h3>
-    <ul>
-        <li *ngFor="let t of latest">
-            <strong>{{ t.description }}</strong> — {{ t.date | date:'shortDate' }} —
-            <span [class.positive]="t.amount>0" [class.negative]="t.amount<0">{{ t.amount | number:'1.2-2' }}</span>
-        </li>
-    </ul>
+    <div class="card">
+        <h3>Últimas Movimentações</h3>
+        <div class="list-row header">
+            <div>Descrição</div>
+            <div>Data</div>
+            <div>Valor</div>
+        </div>
+        <div *ngFor="let t of latest" class="list-row">
+            <div class="primary">
+                <strong>{{ t.description }}</strong>
+            </div>
+            <div>{{ t.date | date:'shortDate' }}</div>
+            <div>
+                <span [ngClass]="{ 'status-positive': t.amount > 0, 'status-negative': t.amount < 0 }">
+                    {{ t.amount | number:'1.2-2' }}
+                </span>
+            </div>
+        </div>
+    </div>
 </div>

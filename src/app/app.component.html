@@ -1,22 +1,27 @@
-<div class="app-container">
-    <!-- Navigation -->
+<div class="app-shell">
     <nav>
-        <ul>
-            <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a></li>
-            <li><a routerLink="/dashboard" routerLinkActive="active">Dashboard</a></li>
-            <li><a routerLink="/transacoes" routerLinkActive="active">Transações</a></li>
-            <li><a routerLink="/sobre" routerLinkActive="active">Sobre</a></li>
-            <li><a routerLink="/contato" routerLinkActive="active">Contato</a></li>
-        </ul>
+        <div class="navbar">
+            <a class="brand" routerLink="/">
+                <span class="brand-icon">D</span>
+                <span>Desk App</span>
+            </a>
+            <div class="nav-links">
+                <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+                <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+                <a routerLink="/transacoes" routerLinkActive="active">Transações</a>
+                <a routerLink="/sobre" routerLinkActive="active">Sobre</a>
+                <a routerLink="/contato" routerLinkActive="active">Contato</a>
+            </div>
+        </div>
     </nav>
 
-    <!-- Main Content -->
-    <div class="container">
+    <main class="container">
         <router-outlet></router-outlet>
-    </div>
+    </main>
 
-    <!-- Footer -->
     <footer>
-        <p>&copy; 2026 Desk App. Projeto Angular com Rotas.</p>
+        <div class="container">
+            <p>&copy; 2026 Desk App. Todos os direitos reservados.</p>
+        </div>
     </footer>
 </div>
