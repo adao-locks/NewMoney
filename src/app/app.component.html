@@ -1,0 +1,22 @@
+<div class="app-container">
+    <!-- Navigation -->
+    <nav>
+        <ul>
+            <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a></li>
+            <li><a routerLink="/dashboard" routerLinkActive="active">Dashboard</a></li>
+            <li><a routerLink="/transacoes" routerLinkActive="active">Transações</a></li>
+            <li><a routerLink="/sobre" routerLinkActive="active">Sobre</a></li>
+            <li><a routerLink="/contato" routerLinkActive="active">Contato</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <router-outlet></router-outlet>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Desk App. Projeto Angular com Rotas.</p>
+    </footer>
+</div>

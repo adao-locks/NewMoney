@@ -1,0 +1,34 @@
+/* Home Component Styles */
+.home {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.card h3 {
+    color: #1976d2;
+    margin-bottom: 1rem;
+}
+
+.card ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.card li {
+    padding: 0.5rem 0;
+    font-size: 1.1rem;
+}
+
+.card p {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}

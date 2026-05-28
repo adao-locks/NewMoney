@@ -1,0 +1,42 @@
+<div class="card">
+    <h2>Cadastro de Ganhos</h2>
+    <form (ngSubmit)="save()" class="form">
+        <div class="row">
+            <label>
+                Data
+                <input type="date" [(ngModel)]="form.date" name="date" required />
+            </label>
+            <label>
+                Descrição
+                <input type="text" [(ngModel)]="form.description" name="description" required />
+            </label>
+            <label>
+                Valor
+                <input type="number" step="0.01" [(ngModel)]="form.amount" name="amount" required />
+            </label>
+        </div>
+        <div class="actions">
+            <button type="submit">{{ isEditing ? 'Atualizar' : 'Adicionar' }}</button>
+            <button type="button" (click)="resetForm()">Cancelar</button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <h3>Ganhos Cadastrados</h3>
+    <ul>
+        <li *ngFor="let item of items">
+            <div class="info">
+                <div>
+                    <strong>{{ item.description }}</strong>
+                    <div class="muted">{{ item.date | date:'shortDate' }}</div>
+                </div>
+                <div>
+                    <span class="positive">+{{ item.amount | number:'1.2-2' }}</span>
+                    <button (click)="edit(item)">Editar</button>
+                    <button class="danger" (click)="remove(item.id)">Excluir</button>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>

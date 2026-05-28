@@ -1,0 +1,55 @@
+.form .row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: flex-end
+}
+
+.form label {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 200px
+}
+
+.actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem
+}
+
+.info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap
+}
+
+.muted {
+    color: #777;
+    font-size: .9rem
+}
+
+.positive {
+    color: #2e7d32;
+    font-weight: 700
+}
+
+button {
+    margin-left: .5rem
+}
+
+button.danger {
+    background: #c62828;
+    color: white
+}
+
+ul {
+    list-style: none;
+    padding: 0
+}
+
+li {
+    padding: .75rem 0;
+    border-bottom: 1px solid #eee
+}

@@ -1,0 +1,36 @@
+/* Sobre Component Styles */
+.sobre {
+    animation: slideIn 0.5s ease-in;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.card h3 {
+    color: #1976d2;
+    margin-bottom: 1rem;
+}
+
+.card ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.card li {
+    padding: 0.5rem 0;
+    font-weight: 500;
+}
+
+.card p {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}

@@ -1,0 +1,48 @@
+.grid {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem
+}
+
+.tile {
+    flex: 1;
+    padding: 1rem;
+    border-radius: 8px;
+    color: white
+}
+
+.ganho {
+    background: #4caf50
+}
+
+.gasto {
+    background: #f44336
+}
+
+.saldo {
+    background: #1976d2
+}
+
+.value {
+    font-size: 1.5rem;
+    font-weight: 700
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0
+}
+
+li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee
+}
+
+.positive {
+    color: #2e7d32
+}
+
+.negative {
+    color: #c62828
+}

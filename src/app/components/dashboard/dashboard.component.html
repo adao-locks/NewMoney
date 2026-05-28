@@ -1,0 +1,27 @@
+<div class="card">
+    <h2>Dashboard Financeiro</h2>
+    <div class="grid">
+        <div class="tile ganho">
+            <h3>Ganhos</h3>
+            <p class="value">{{ summary.ganhos | number:'1.2-2' }}</p>
+        </div>
+        <div class="tile gasto">
+            <h3>Gastos</h3>
+            <p class="value">{{ summary.gastos | number:'1.2-2' }}</p>
+        </div>
+        <div class="tile saldo">
+            <h3>Saldo</h3>
+            <p class="value">{{ summary.balance | number:'1.2-2' }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Últimas Movimentações</h3>
+    <ul>
+        <li *ngFor="let t of latest">
+            <strong>{{ t.description }}</strong> — {{ t.date | date:'shortDate' }} —
+            <span [class.positive]="t.amount>0" [class.negative]="t.amount<0">{{ t.amount | number:'1.2-2' }}</span>
+        </li>
+    </ul>
+</div>
