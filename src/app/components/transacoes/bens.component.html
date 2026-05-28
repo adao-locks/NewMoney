@@ -1,0 +1,86 @@
+<div class="page-section">
+    <section class="page-header">
+        <div>
+            <h1>Bens</h1>
+            <p class="section-intro">Cadastre imóveis, veículos e outros bens para compor o patrimônio da pessoa.</p>
+        </div>
+    </section>
+
+    <div class="summary-strip">
+        <div>
+            <span>Patrimônio em bens</span>
+            <strong>{{ totals.patrimonioBens | number:'1.2-2' }}</strong>
+        </div>
+        <div>
+            <span>Valorização</span>
+            <strong>{{ totals.valorizacaoBens | number:'1.2-2' }}</strong>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>{{ isEditing ? 'Editar Bem' : 'Adicionar Bem' }}</h2>
+        <form (ngSubmit)="save()" class="form-grid">
+            <div class="field-group">
+                <label for="name">Nome do bem</label>
+                <input type="text" id="name" [(ngModel)]="form.name" name="name" required />
+            </div>
+            <div class="field-group">
+                <label for="category">Categoria</label>
+                <select id="category" [(ngModel)]="form.category" name="category" required>
+                    <option *ngFor="let item of categories" [ngValue]="item">{{ item }}</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label for="acquisitionDate">Data de aquisição</label>
+                <input type="date" id="acquisitionDate" [(ngModel)]="form.acquisitionDate" name="acquisitionDate" required />
+            </div>
+            <div class="field-group">
+                <label for="acquisitionValue">Valor de aquisição</label>
+                <input type="number" step="0.01" id="acquisitionValue" [(ngModel)]="form.acquisitionValue" name="acquisitionValue" />
+            </div>
+            <div class="field-group">
+                <label for="currentValue">Valor atual</label>
+                <input type="number" step="0.01" id="currentValue" [(ngModel)]="form.currentValue" name="currentValue" />
+            </div>
+            <div class="field-group">
+                <label for="liquidity">Liquidez</label>
+                <select id="liquidity" [(ngModel)]="form.liquidity" name="liquidity">
+                    <option *ngFor="let item of liquidities" [ngValue]="item.value">{{ item.label }}</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label for="status">Status</label>
+                <select id="status" [(ngModel)]="form.status" name="status">
+                    <option *ngFor="let item of statuses" [ngValue]="item.value">{{ item.label }}</option>
+                </select>
+            </div>
+            <div class="field-group full-width">
+                <label for="notes">Observações</label>
+                <textarea id="notes" [(ngModel)]="form.notes" name="notes"></textarea>
+            </div>
+            <div class="field-group full-width actions">
+                <button type="submit">{{ isEditing ? 'Atualizar' : 'Adicionar' }}</button>
+                <button type="button" class="secondary" (click)="resetForm()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>Bens Cadastrados</h3>
+        <div *ngIf="items.length === 0" class="message-box">Nenhum bem registrado ainda.</div>
+        <div *ngFor="let item of items" class="list-row">
+            <div class="primary">
+                <strong>{{ item.name }}</strong>
+                <span class="muted">{{ item.category }} · {{ item.acquisitionDate | date:'shortDate' }} · {{ item.status }}</span>
+            </div>
+            <div>
+                <strong>{{ item.currentValue | number:'1.2-2' }}</strong>
+                <span class="muted">Liquidez {{ item.liquidity }}</span>
+            </div>
+            <div class="actions-row">
+                <button type="button" class="secondary" (click)="edit(item)">Editar</button>
+                <button type="button" class="danger" (click)="remove(item.id)">Excluir</button>
+            </div>
+        </div>
+    </div>
+</div>

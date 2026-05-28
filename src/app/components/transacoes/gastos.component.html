@@ -7,7 +7,7 @@
     </section>
 
     <div class="card">
-        <h2>Adicionar Gasto</h2>
+        <h2>{{ isEditing ? 'Editar Gasto' : 'Adicionar Gasto' }}</h2>
         <form (ngSubmit)="save()" class="form-grid">
             <div class="field-group">
                 <label for="date">Data</label>
@@ -18,8 +18,22 @@
                 <input type="text" id="description" [(ngModel)]="form.description" name="description" required />
             </div>
             <div class="field-group">
+                <label for="category">Categoria</label>
+                <select id="category" [(ngModel)]="form.category" name="category">
+                    <option *ngFor="let item of categories" [ngValue]="item">{{ item }}</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label for="account">Conta</label>
+                <input type="text" id="account" [(ngModel)]="form.account" name="account" />
+            </div>
+            <div class="field-group">
                 <label for="amount">Valor</label>
                 <input type="number" step="0.01" id="amount" [(ngModel)]="form.amount" name="amount" required />
+            </div>
+            <div class="field-group full-width">
+                <label for="notes">Observações</label>
+                <textarea id="notes" [(ngModel)]="form.notes" name="notes"></textarea>
             </div>
             <div class="field-group full-width actions">
                 <button type="submit">{{ isEditing ? 'Atualizar' : 'Adicionar' }}</button>
@@ -34,7 +48,7 @@
         <div *ngFor="let item of items" class="list-row">
             <div class="primary">
                 <strong>{{ item.description }}</strong>
-                <span class="muted">{{ item.date | date:'shortDate' }}</span>
+                <span class="muted">{{ item.category || 'Sem categoria' }} · {{ item.date | date:'shortDate' }}</span>
             </div>
             <div class="status-negative">{{ item.amount | number:'1.2-2' }}</div>
             <div class="actions-row">

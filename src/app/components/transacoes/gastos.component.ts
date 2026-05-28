@@ -18,10 +18,15 @@ export class TransacoesGastosComponent {
         date: new Date().toISOString().substring(0, 10),
         description: '',
         amount: 0,
+        category: 'Moradia',
+        account: '',
+        notes: '',
     };
 
+    categories = ['Moradia', 'Alimentação', 'Transporte', 'Saúde', 'Educação', 'Lazer', 'Dívidas', 'Impostos', 'Outros'];
+
     get items() {
-        return this.service.getAll().filter((t) => t.amount < 0);
+        return this.service.getAll().filter((t) => (t.type ?? 'expense') === 'expense');
     }
 
     get isEditing() {
@@ -37,6 +42,10 @@ export class TransacoesGastosComponent {
             date: this.form.date!,
             description: this.form.description!,
             amount: -Math.abs(Number(this.form.amount)),
+            type: 'expense',
+            category: this.form.category,
+            account: this.form.account,
+            notes: this.form.notes,
         };
 
         if (this.editingId) {
@@ -66,6 +75,9 @@ export class TransacoesGastosComponent {
             date: new Date().toISOString().substring(0, 10),
             description: '',
             amount: 0,
+            category: 'Moradia',
+            account: '',
+            notes: '',
         };
     }
 }

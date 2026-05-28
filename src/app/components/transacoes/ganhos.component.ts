@@ -18,10 +18,15 @@ export class TransacoesGanhosComponent {
         date: new Date().toISOString().substring(0, 10),
         description: '',
         amount: 0,
+        category: 'Salário',
+        account: '',
+        notes: '',
     };
 
+    categories = ['Salário', 'Freelance', 'Vendas', 'Aluguel', 'Dividendos', 'Reembolso', 'Outros'];
+
     get items() {
-        return this.service.getAll().filter((t) => t.amount > 0);
+        return this.service.getAll().filter((t) => (t.type ?? 'income') === 'income');
     }
 
     get isEditing() {
@@ -37,6 +42,10 @@ export class TransacoesGanhosComponent {
             date: this.form.date!,
             description: this.form.description!,
             amount: Math.abs(Number(this.form.amount)),
+            type: 'income',
+            category: this.form.category,
+            account: this.form.account,
+            notes: this.form.notes,
         };
 
         if (this.editingId) {
@@ -66,6 +75,9 @@ export class TransacoesGanhosComponent {
             date: new Date().toISOString().substring(0, 10),
             description: '',
             amount: 0,
+            category: 'Salário',
+            account: '',
+            notes: '',
         };
     }
 }

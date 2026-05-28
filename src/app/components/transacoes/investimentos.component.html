@@ -1,0 +1,104 @@
+<div class="page-section">
+    <section class="page-header">
+        <div>
+            <h1>Investimentos</h1>
+            <p class="section-intro">Registre aportes, resgates e rendimentos com os dados principais de cada aplicação.</p>
+        </div>
+    </section>
+
+    <div class="summary-strip">
+        <div>
+            <span>Aportes</span>
+            <strong>{{ totals.aportes | number:'1.2-2' }}</strong>
+        </div>
+        <div>
+            <span>Resgates</span>
+            <strong>{{ totals.resgates | number:'1.2-2' }}</strong>
+        </div>
+        <div>
+            <span>Rendimentos</span>
+            <strong>{{ totals.rendimentos | number:'1.2-2' }}</strong>
+        </div>
+        <div>
+            <span>Posição</span>
+            <strong>{{ totals.posicaoInvestimentos | number:'1.2-2' }}</strong>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>{{ isEditing ? 'Editar Movimento' : 'Adicionar Movimento' }}</h2>
+        <form (ngSubmit)="save()" class="form-grid">
+            <div class="field-group">
+                <label for="investmentType">Tipo</label>
+                <select id="investmentType" [(ngModel)]="form.type" name="type" required>
+                    <option *ngFor="let option of movementTypes" [ngValue]="option.value">{{ option.label }}</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label for="date">Data</label>
+                <input type="date" id="date" [(ngModel)]="form.date" name="date" required />
+            </div>
+            <div class="field-group">
+                <label for="investmentName">Investimento</label>
+                <input type="text" id="investmentName" [(ngModel)]="form.investmentName" name="investmentName" required />
+            </div>
+            <div class="field-group">
+                <label for="institution">Instituição</label>
+                <input type="text" id="institution" [(ngModel)]="form.institution" name="institution" />
+            </div>
+            <div class="field-group">
+                <label for="assetClass">Classe</label>
+                <select id="assetClass" [(ngModel)]="form.assetClass" name="assetClass">
+                    <option *ngFor="let item of assetClasses" [ngValue]="item">{{ item }}</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label for="amount">Valor</label>
+                <input type="number" step="0.01" id="amount" [(ngModel)]="form.amount" name="amount" required />
+            </div>
+            <div class="field-group">
+                <label for="quantity">Quantidade</label>
+                <input type="number" step="0.000001" id="quantity" [(ngModel)]="form.quantity" name="quantity" />
+            </div>
+            <div class="field-group">
+                <label for="unitPrice">Preço unitário</label>
+                <input type="number" step="0.01" id="unitPrice" [(ngModel)]="form.unitPrice" name="unitPrice" />
+            </div>
+            <div class="field-group">
+                <label for="brokerFee">Taxas</label>
+                <input type="number" step="0.01" id="brokerFee" [(ngModel)]="form.brokerFee" name="brokerFee" />
+            </div>
+            <div class="field-group">
+                <label for="description">Descrição</label>
+                <input type="text" id="description" [(ngModel)]="form.description" name="description" required />
+            </div>
+            <div class="field-group full-width">
+                <label for="notes">Observações</label>
+                <textarea id="notes" [(ngModel)]="form.notes" name="notes"></textarea>
+            </div>
+            <div class="field-group full-width actions">
+                <button type="submit">{{ isEditing ? 'Atualizar' : 'Adicionar' }}</button>
+                <button type="button" class="secondary" (click)="resetForm()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>Movimentos Cadastrados</h3>
+        <div *ngIf="items.length === 0" class="message-box">Nenhum movimento de investimento registrado ainda.</div>
+        <div *ngFor="let item of items" class="list-row">
+            <div class="primary">
+                <strong>{{ item.investmentName }}</strong>
+                <span class="muted">{{ typeLabel(item.type) }} · {{ item.assetClass || 'Sem classe' }} · {{ item.date | date:'shortDate' }}</span>
+                <span class="muted">{{ item.description }}</span>
+            </div>
+            <div [ngClass]="item.type === 'investment_out' ? 'status-negative' : 'status-positive'">
+                {{ item.amount | number:'1.2-2' }}
+            </div>
+            <div class="actions-row">
+                <button type="button" class="secondary" (click)="edit(item)">Editar</button>
+                <button type="button" class="danger" (click)="remove(item.id)">Excluir</button>
+            </div>
+        </div>
+    </div>
+</div>

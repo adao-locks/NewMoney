@@ -3,45 +3,84 @@
     gap: 1.5rem;
 }
 
-.grid-card {
+.grid-card,
+.panel-grid {
     display: grid;
     gap: 1rem;
+}
+
+.main-kpis {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.panel-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .tile {
     display: grid;
-    gap: 0.75rem;
-    padding: 1.5rem;
-    border-radius: 24px;
+    gap: 0.65rem;
+    min-height: 170px;
     color: white;
-    min-height: 180px;
+}
+
+.tile h3,
+.tile span {
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .ganho {
-    background: linear-gradient(135deg, #22c55e, #15803d);
+    background: linear-gradient(135deg, #16a34a, #15803d);
 }
 
 .gasto {
-    background: linear-gradient(135deg, #ef4444, #b91c1c);
+    background: linear-gradient(135deg, #dc2626, #991b1b);
 }
 
 .saldo {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+}
+
+.investimento {
+    background: linear-gradient(135deg, #0891b2, #0f766e);
 }
 
 .value {
-    font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+    font-size: clamp(1.6rem, 2.4vw, 2.2rem);
     font-weight: 800;
+    color: white;
+}
+
+.metric-list {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.metric-list div,
+.bar-row,
+.asset-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.metric-list div:last-child,
+.bar-row:last-child,
+.asset-row:last-child {
+    border-bottom: none;
+}
+
+.metric-list span,
+.bar-row span,
+.muted {
+    color: #64748b;
 }
 
 .list-row {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    gap: 1rem;
-    padding: 1rem 0;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
-    align-items: center;
+    grid-template-columns: 2fr 0.8fr 0.8fr 1fr;
 }
 
 .list-row.header {
@@ -50,31 +89,30 @@
     border-bottom: 2px solid rgba(148, 163, 184, 0.24);
 }
 
-.primary {
+.primary,
+.asset-row div {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
 }
 
-.status-positive {
-    color: #166534;
-    font-weight: 700;
-}
-
+.status-positive,
 .status-negative {
-    color: #991b1b;
     font-weight: 700;
 }
 
-@media (max-width: 900px) {
-    .grid-card {
-        grid-template-columns: 1fr;
+@media (max-width: 1040px) {
+    .main-kpis,
+    .panel-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+}
 
+@media (max-width: 720px) {
+    .main-kpis,
+    .panel-grid,
     .list-row {
         grid-template-columns: 1fr;
-        gap: 0.75rem;
-        padding: 0.85rem 0;
     }
 
     .list-row.header {

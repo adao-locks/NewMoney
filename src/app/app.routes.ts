@@ -6,6 +6,8 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { TransacoesComponent } from './components/transacoes/transacoes.component';
 import { TransacoesGanhosComponent } from './components/transacoes/ganhos.component';
 import { TransacoesGastosComponent } from './components/transacoes/gastos.component';
+import { TransacoesInvestimentosComponent } from './components/transacoes/investimentos.component';
+import { TransacoesBensComponent } from './components/transacoes/bens.component';
 
 export const routes: Routes = [
     {
@@ -39,6 +41,14 @@ export const routes: Routes = [
             {
                 path: 'gastos',
                 component: TransacoesGastosComponent,
+            },
+            {
+                path: 'investimentos',
+                component: TransacoesInvestimentosComponent,
+            },
+            {
+                path: 'bens',
+                component: TransacoesBensComponent,
             },
             {
                 path: '',
