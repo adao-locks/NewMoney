@@ -34,13 +34,19 @@ export class DashboardComponent implements OnInit {
     @ViewChild('investmentsCanvas') investmentsCanvas!: ElementRef<HTMLCanvasElement>;
     @ViewChild('expensesCanvas') expensesCanvas!: ElementRef<HTMLCanvasElement>;
     @ViewChild('assetsCanvas') assetsCanvas!: ElementRef<HTMLCanvasElement>;
+    @ViewChild('mainChartCanvas') mainChartCanvas!: ElementRef<HTMLCanvasElement>;
 
     private investmentsChart?: Chart;
     private expensesChart?: Chart;
     private assetsChart?: Chart;
+    private mainChart?: Chart;
     loading = false;
     readonly Math = Math;
     errorMessage = '';
+    // Controls state
+    period: 'day' | 'week' | 'month' | 'year' = 'month';
+    dateRange = '1 Sep 2024 - 31 Sep 2024';
+    searchTerm = '';
 
     constructor(private service: TransactionService) { }
 
@@ -50,6 +56,8 @@ export class DashboardComponent implements OnInit {
 
     ngAfterViewInit() {
         Chart.register(...registerables);
+        // Ensure charts render after view is ready (data may already be loaded)
+        this.renderCharts();
     }
 
     private async loadDashboard() {
@@ -93,6 +101,39 @@ export class DashboardComponent implements OnInit {
         } finally {
             this.loading = false;
         }
+    }
+
+    setPeriod(p: 'day' | 'week' | 'month' | 'year') {
+        this.period = p;
+        // for now, rebuilding charts is enough; later we can filter data by period
+        this.buildCharts();
+        this.renderCharts();
+    }
+
+    changeDateRange() {
+        const value = prompt('Informe o período (ex: 1 Sep 2024 - 30 Sep 2024)', this.dateRange);
+        if (value) {
+            this.dateRange = value;
+            // could trigger data reload with new range
+        }
+    }
+
+    onSearch(value: string) {
+        this.searchTerm = value?.trim() ?? '';
+    }
+
+    get filteredLatest() {
+        const q = this.searchTerm.toLowerCase();
+        if (!q) {
+            return this.latest;
+        }
+        return this.latest.filter((t) => {
+            return (
+                String(t.description || '').toLowerCase().includes(q) ||
+                String(t.category || '').toLowerCase().includes(q) ||
+                String(t.account || '').toLowerCase().includes(q)
+            );
+        });
     }
 
     private buildCharts() {
@@ -141,6 +182,19 @@ export class DashboardComponent implements OnInit {
                 type: 'pie',
                 data: { labels: this.assetsLabels, datasets: [{ data: this.assetsValues, backgroundColor: makeColors(this.assetsLabels.length) }] },
                 options: this.chartOptions,
+            });
+        }
+
+        // Main big chart (reuse assets or investments data if available)
+        if (this.mainChartCanvas) {
+            const ctx = this.mainChartCanvas.nativeElement.getContext('2d')!;
+            this.mainChart?.destroy();
+            const labels = this.investmentsLabels.length ? this.investmentsLabels : this.assetsLabels;
+            const data = this.investmentsValues.length ? this.investmentsValues : this.assetsValues;
+            this.mainChart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels, datasets: [{ label: 'Valor', data, backgroundColor: makeColors(labels.length) }] },
+                options: { ...this.chartOptions, scales: { x: { stacked: false }, y: { beginAtZero: true } } },
             });
         }
     }

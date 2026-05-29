@@ -7,21 +7,6 @@
     </div>
   </section>
 
-  <section class="dashboard-controls">
-    <div class="controls-left">
-      <input class="search" placeholder="Search..." />
-    </div>
-    <div class="controls-right">
-      <div class="segmented">
-        <button class="seg-btn">Day</button>
-        <button class="seg-btn">Week</button>
-        <button class="seg-btn active">Month</button>
-        <button class="seg-btn">Year</button>
-      </div>
-      <div class="date-range">1 Sep 2024 - 31 Sep 2024</div>
-    </div>
-  </section>
-
   <div class="grid-card main-kpis">
     <div class="card tile saldo">
       <h3>Patrimônio total</h3>
@@ -69,7 +54,7 @@
               <h4 style="margin:0 0 0.75rem 0">Total Revenue</h4>
               <div style="display:flex;gap:1rem;align-items:flex-end">
                 <div style="flex:1">
-                  <canvas #assetsCanvas></canvas>
+                  <canvas #mainChartCanvas></canvas>
                 </div>
                 <div style="width:220px" class="calendar-panel">
                   <h5 style="margin:0 0 0.6rem 0">September 2024</h5>
@@ -197,6 +182,21 @@
     </div>
   </div>
 
+  <section class="dashboard-controls">
+    <div class="controls-left">
+      <input #searchInput class="search" placeholder="Search..." (input)="onSearch(searchInput.value)" />
+    </div>
+    <div class="controls-right">
+      <div class="segmented">
+        <button class="seg-btn" (click)="setPeriod('day')" [class.active]="period === 'day'">Day</button>
+        <button class="seg-btn" (click)="setPeriod('week')" [class.active]="period === 'week'">Week</button>
+        <button class="seg-btn" (click)="setPeriod('month')" [class.active]="period === 'month'">Month</button>
+        <button class="seg-btn" (click)="setPeriod('year')" [class.active]="period === 'year'">Year</button>
+      </div>
+      <div class="date-range" (click)="changeDateRange()">{{ dateRange }}</div>
+    </div>
+  </section>
+
   <div class="card">
     <h3>Últimas Movimentações</h3>
     <div class="list-row header">
@@ -206,7 +206,7 @@
       <div>Valor</div>
     </div>
     <div *ngIf="latest.length === 0" class="message-box">Nenhuma movimentação registrada ainda.</div>
-    <div *ngFor="let t of latest" class="list-row">
+    <div *ngFor="let t of filteredLatest" class="list-row">
       <div class="primary">
         <strong>{{ t.description }}</strong>
         <span class="muted">{{ t.category || t.account || 'Sem categoria' }}</span>
