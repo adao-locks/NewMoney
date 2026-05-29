@@ -1,9 +1,9 @@
-<div class="page-section">
+<div class="page-section dashboard-page">
     <section class="page-header">
         <div>
             <h1>Dashboard Financeiro</h1>
-            <p class="section-intro">Controle entradas, saídas, investimentos, bens e patrimônio em uma visão
-                consolidada.</p>
+            <p class="section-intro">Uma visão fácil de entender dos seus valores, com painéis mais claros e
+                responsivos.</p>
         </div>
     </section>
 
@@ -26,48 +26,89 @@
         <div class="card tile investimento">
             <h3>Investimentos</h3>
             <p class="value">{{ summary.posicaoInvestimentos | number:'1.2-2' }}</p>
-            <span>Aportes - resgates + rendimentos</span>
+            <span>Aportes, resgates e rendimentos</span>
         </div>
     </div>
 
-    <div class="panel-grid">
-        <div class="card">
-            <h3>Fluxo de Caixa</h3>
-            <div class="metric-list">
+    <div class="chart-grid">
+        <div class="card chart-card">
+            <div class="chart-header">
+                <h3>Fluxo de Caixa</h3>
+                <span class="badge">Atual</span>
+            </div>
+            <div class="metric-list compact">
                 <div><span>Saldo operacional</span><strong>{{ summary.balance | number:'1.2-2' }}</strong></div>
                 <div><span>Gastos sobre ganhos</span><strong>{{ summary.ganhos ? (summary.gastosTotal / summary.ganhos *
                         100 | number:'1.0-0') : 0 }}%</strong></div>
                 <div><span>Saúde do caixa</span><strong>{{ cashFlowHealth }}%</strong></div>
             </div>
-        </div>
-
-        <div class="card">
-            <h3>Resumo de Investimentos</h3>
-            <div class="metric-list">
-                <div><span>Aportes</span><strong>{{ summary.aportes | number:'1.2-2' }}</strong></div>
-                <div><span>Resgates</span><strong>{{ summary.resgates | number:'1.2-2' }}</strong></div>
-                <div><span>Rendimentos</span><strong>{{ summary.rendimentos | number:'1.2-2' }}</strong></div>
+            <div class="progress-group">
+                <div class="progress-item">
+                    <span>Gastos</span>
+                    <div class="progress-track">
+                        <div class="progress-fill gasto"
+                            [style.width.%]="summary.ganhos ? Math.min((summary.gastosTotal / summary.ganhos) * 100, 100) : 0">
+                        </div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <span>Investimentos</span>
+                    <div class="progress-track">
+                        <div class="progress-fill investimento"
+                            [style.width.%]="summary.ganhos ? Math.min((summary.posicaoInvestimentos / summary.ganhos) * 100 + 5, 100) : 0">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="card">
-            <h3>Bens e Patrimônio</h3>
-            <div class="metric-list">
-                <div><span>Valor atual dos bens</span><strong>{{ summary.patrimonioBens | number:'1.2-2' }}</strong>
+        <div class="card chart-card summary-card">
+            <div class="chart-header">
+                <h3>Composição</h3>
+                <span class="badge">Visão rápida</span>
+            </div>
+            <div class="summary-chart">
+                <div class="summary-tile">
+                    <strong>{{ summary.ganhos | number:'1.2-2' }}</strong>
+                    <span>Ganhos</span>
                 </div>
-                <div><span>Valorização dos bens</span><strong>{{ summary.valorizacaoBens | number:'1.2-2' }}</strong>
+                <div class="summary-tile">
+                    <strong>{{ summary.gastosTotal | number:'1.2-2' }}</strong>
+                    <span>Gastos</span>
                 </div>
-                <div><span>Bens cadastrados</span><strong>{{ assets.length }}</strong></div>
+                <div class="summary-tile">
+                    <strong>{{ summary.posicaoInvestimentos | number:'1.2-2' }}</strong>
+                    <span>Investimentos</span>
+                </div>
+            </div>
+            <div class="summary-chart secondary">
+                <div class="summary-tile">
+                    <strong>{{ summary.aportes | number:'1.2-2' }}</strong>
+                    <span>Aportes</span>
+                </div>
+                <div class="summary-tile">
+                    <strong>{{ summary.resgates | number:'1.2-2' }}</strong>
+                    <span>Resgates</span>
+                </div>
+                <div class="summary-tile">
+                    <strong>{{ summary.rendimentos | number:'1.2-2' }}</strong>
+                    <span>Rendimentos</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="panel-grid">
+    <div class="panel-grid stats-grid">
         <div class="card">
             <h3>Investimentos por Classe</h3>
             <div *ngIf="investmentsByClass.length === 0" class="message-box">Nenhum investimento cadastrado.</div>
             <div *ngFor="let item of investmentsByClass" class="bar-row">
                 <span>{{ item.label }}</span>
+                <div class="bar-shell">
+                    <div class="bar-fill ganho"
+                        [style.width.%]="item.value ? Math.min((item.value / (summary.posicaoInvestimentos || 1)) * 100, 100) : 0">
+                    </div>
+                </div>
                 <strong>{{ item.value | number:'1.2-2' }}</strong>
             </div>
         </div>
@@ -77,6 +118,11 @@
             <div *ngIf="expensesByCategory.length === 0" class="message-box">Nenhum gasto categorizado.</div>
             <div *ngFor="let item of expensesByCategory" class="bar-row">
                 <span>{{ item.label }}</span>
+                <div class="bar-shell">
+                    <div class="bar-fill gasto"
+                        [style.width.%]="item.value ? Math.min((item.value / (summary.gastosTotal || 1)) * 100, 100) : 0">
+                    </div>
+                </div>
                 <strong>{{ item.value | number:'1.2-2' }}</strong>
             </div>
         </div>
@@ -86,6 +132,11 @@
             <div *ngIf="assetsByCategory.length === 0" class="message-box">Nenhum bem cadastrado.</div>
             <div *ngFor="let item of assetsByCategory" class="bar-row">
                 <span>{{ item.label }}</span>
+                <div class="bar-shell">
+                    <div class="bar-fill investimento"
+                        [style.width.%]="item.value ? Math.min((item.value / (summary.patrimonioBens || 1)) * 100, 100) : 0">
+                    </div>
+                </div>
                 <strong>{{ item.value | number:'1.2-2' }}</strong>
             </div>
         </div>
