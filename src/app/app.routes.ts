@@ -8,58 +8,72 @@ import { TransacoesGanhosComponent } from './components/transacoes/ganhos.compon
 import { TransacoesGastosComponent } from './components/transacoes/gastos.component';
 import { TransacoesInvestimentosComponent } from './components/transacoes/investimentos.component';
 import { TransacoesBensComponent } from './components/transacoes/bens.component';
+import { LoginComponent } from './components/login/login.component';
+import { authChildGuard, authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
     {
+        path: 'login',
+        component: LoginComponent,
+        data: { title: 'NewMoney - Login' },
+    },
+    {
         path: '',
-        component: HomeComponent,
-        data: { title: 'Desk App - Home' }
-    },
-    {
-        path: 'sobre',
-        component: SobreComponent,
-        data: { title: 'Desk App - Sobre' }
-    },
-    {
-        path: 'contato',
-        component: ContatoComponent,
-        data: { title: 'Desk App - Contato' }
-    },
-    {
-        path: 'dashboard',
-        component: DashboardComponent,
-        data: { title: 'Desk App - Dashboard' }
-    },
-    {
-        path: 'transacoes',
-        component: TransacoesComponent,
+        canActivate: [authGuard],
+        canActivateChild: [authChildGuard],
         children: [
             {
-                path: 'ganhos',
-                component: TransacoesGanhosComponent,
-            },
-            {
-                path: 'gastos',
-                component: TransacoesGastosComponent,
-            },
-            {
-                path: 'investimentos',
-                component: TransacoesInvestimentosComponent,
-            },
-            {
-                path: 'bens',
-                component: TransacoesBensComponent,
-            },
-            {
                 path: '',
-                redirectTo: 'ganhos',
-                pathMatch: 'full',
+                component: HomeComponent,
+                data: { title: 'NewMoney - Home' },
+            },
+            {
+                path: 'sobre',
+                component: SobreComponent,
+                data: { title: 'NewMoney - Sobre' },
+            },
+            {
+                path: 'contato',
+                component: ContatoComponent,
+                data: { title: 'NewMoney - Contato' },
+            },
+            {
+                path: 'dashboard',
+                component: DashboardComponent,
+                data: { title: 'NewMoney - Dashboard' },
+            },
+            {
+                path: 'transacoes',
+                component: TransacoesComponent,
+                children: [
+                    {
+                        path: 'ganhos',
+                        component: TransacoesGanhosComponent,
+                    },
+                    {
+                        path: 'gastos',
+                        component: TransacoesGastosComponent,
+                    },
+                    {
+                        path: 'investimentos',
+                        component: TransacoesInvestimentosComponent,
+                    },
+                    {
+                        path: 'bens',
+                        component: TransacoesBensComponent,
+                    },
+                    {
+                        path: '',
+                        redirectTo: 'ganhos',
+                        pathMatch: 'full',
+                    },
+                ],
+                data: { title: 'NewMoney - Transacoes' },
             },
         ],
-        data: { title: 'Desk App - Transações' }
     },
     {
         path: '**',
-        redirectTo: ''
-    }
+        redirectTo: '',
+    },
 ];

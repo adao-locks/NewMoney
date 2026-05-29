@@ -79,12 +79,10 @@ nav {
 .brand-icon {
     width: 2.25rem;
     height: 2.25rem;
-    display: grid;
-    place-items: center;
-    border-radius: 12px;
-    background: #e0e7ff;
-    color: #1d4ed8;
-    font-weight: 700;
+    display: block;
+    object-fit: contain;
+    border-radius: 8px;
+    flex-shrink: 0;
 }
 
 .nav-links {

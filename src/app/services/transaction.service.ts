@@ -1,4 +1,5 @@
 import { InvestmentMovement, PersonalAsset, Transaction } from '../models/transaction.model';
+import { firebaseAuth } from '../firebase';
 
 const STORAGE_KEY = 'desk_transactions_v1';
 const ASSETS_STORAGE_KEY = 'desk_assets_v1';
@@ -13,7 +14,9 @@ export class TransactionService {
 
   private load() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const storageKey = this.getStorageKey(STORAGE_KEY);
+      this.migrateLegacyData(STORAGE_KEY, storageKey);
+      const raw = localStorage.getItem(storageKey);
       this.items = (raw ? JSON.parse(raw) : []).map((item: Transaction) => ({
         ...item,
         type: item.type ?? (item.amount >= 0 ? 'income' : 'expense'),
@@ -23,7 +26,9 @@ export class TransactionService {
     }
 
     try {
-      const rawAssets = localStorage.getItem(ASSETS_STORAGE_KEY);
+      const assetsStorageKey = this.getStorageKey(ASSETS_STORAGE_KEY);
+      this.migrateLegacyData(ASSETS_STORAGE_KEY, assetsStorageKey);
+      const rawAssets = localStorage.getItem(assetsStorageKey);
       this.assets = rawAssets ? JSON.parse(rawAssets) : [];
     } catch (e) {
       this.assets = [];
@@ -31,11 +36,27 @@ export class TransactionService {
   }
 
   private save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.items));
+    localStorage.setItem(this.getStorageKey(STORAGE_KEY), JSON.stringify(this.items));
   }
 
   private saveAssets() {
-    localStorage.setItem(ASSETS_STORAGE_KEY, JSON.stringify(this.assets));
+    localStorage.setItem(this.getStorageKey(ASSETS_STORAGE_KEY), JSON.stringify(this.assets));
+  }
+
+  private getStorageKey(key: string) {
+    const uid = firebaseAuth.currentUser?.uid;
+    return uid ? `${key}_${uid}` : key;
+  }
+
+  private migrateLegacyData(key: string, userKey: string) {
+    if (key === userKey || localStorage.getItem(userKey)) {
+      return;
+    }
+
+    const legacy = localStorage.getItem(key);
+    if (legacy) {
+      localStorage.setItem(userKey, legacy);
+    }
   }
 
   getAll(): Transaction[] {
