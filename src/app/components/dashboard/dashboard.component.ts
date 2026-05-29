@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TransactionService, emptySummary, FinancialSummary } from '../../services/transaction.service';
 import { InvestmentMovement, PersonalAsset, Transaction } from '../../models/transaction.model';
+import { Chart, registerables, ChartOptions } from 'chart.js';
 
 @Component({
     selector: 'app-dashboard',
@@ -17,6 +18,26 @@ export class DashboardComponent implements OnInit {
     expensesByCategory: Array<{ label: string; value: number }> = [];
     assetsByCategory: Array<{ label: string; value: number }> = [];
     assets: PersonalAsset[] = [];
+    investmentsDetails: InvestmentMovement[] = [];
+    investmentsLabels: string[] = [];
+    investmentsValues: number[] = [];
+    expensesLabels: string[] = [];
+    expensesValues: number[] = [];
+    assetsLabels: string[] = [];
+    assetsValues: number[] = [];
+    chartOptions: ChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' as const } }
+    };
+
+    @ViewChild('investmentsCanvas') investmentsCanvas!: ElementRef<HTMLCanvasElement>;
+    @ViewChild('expensesCanvas') expensesCanvas!: ElementRef<HTMLCanvasElement>;
+    @ViewChild('assetsCanvas') assetsCanvas!: ElementRef<HTMLCanvasElement>;
+
+    private investmentsChart?: Chart;
+    private expensesChart?: Chart;
+    private assetsChart?: Chart;
     loading = false;
     readonly Math = Math;
     errorMessage = '';
@@ -27,19 +48,25 @@ export class DashboardComponent implements OnInit {
         this.loadDashboard();
     }
 
+    ngAfterViewInit() {
+        Chart.register(...registerables);
+    }
+
     private async loadDashboard() {
         this.loading = true;
         this.errorMessage = '';
 
         try {
-            const [allItems, assets] = await Promise.all([
+            const [allItems, assets, investmentMoves] = await Promise.all([
                 this.service.getAll(),
                 this.service.getAssets(),
+                this.service.getInvestmentMovements(),
             ]);
 
             this.summary = this.service.calculateSummary(allItems, assets);
             this.latest = allItems.slice(0, 8);
             this.assets = assets.slice(0, 5);
+            this.investmentsDetails = investmentMoves;
             this.investmentsByClass = this.groupBy(
                 allItems.filter((item) =>
                     item.type === 'investment_in' || item.type === 'investment_out' || item.type === 'investment_return'
@@ -58,10 +85,63 @@ export class DashboardComponent implements OnInit {
                 })),
                 'category'
             );
+
+            this.buildCharts();
+            this.renderCharts();
         } catch {
             this.errorMessage = 'Nao foi possivel carregar o dashboard.';
         } finally {
             this.loading = false;
+        }
+    }
+
+    private buildCharts() {
+        const makeColors = (n: number) => Array.from({ length: n }, (_, i) => `hsl(${(i * 55) % 360} 70% 50%)`);
+
+        this.investmentsLabels = this.investmentsByClass.map((i) => i.label);
+        this.investmentsValues = this.investmentsByClass.map((i) => i.value);
+
+        this.expensesLabels = this.expensesByCategory.map((i) => i.label);
+        this.expensesValues = this.expensesByCategory.map((i) => i.value);
+
+        this.assetsLabels = this.assetsByCategory.map((i) => i.label);
+        this.assetsValues = this.assetsByCategory.map((i) => i.value);
+    }
+
+    private renderCharts() {
+        const makeColors = (n: number) => Array.from({ length: n }, (_, i) => `hsl(${(i * 55) % 360} 70% 50%)`);
+
+        // Investments chart
+        if (this.investmentsCanvas) {
+            const ctx = this.investmentsCanvas.nativeElement.getContext('2d')!;
+            this.investmentsChart?.destroy();
+            this.investmentsChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels: this.investmentsLabels, datasets: [{ data: this.investmentsValues, backgroundColor: makeColors(this.investmentsLabels.length) }] },
+                options: this.chartOptions,
+            });
+        }
+
+        // Expenses chart
+        if (this.expensesCanvas) {
+            const ctx = this.expensesCanvas.nativeElement.getContext('2d')!;
+            this.expensesChart?.destroy();
+            this.expensesChart = new Chart(ctx, {
+                type: 'pie',
+                data: { labels: this.expensesLabels, datasets: [{ data: this.expensesValues, backgroundColor: makeColors(this.expensesLabels.length) }] },
+                options: this.chartOptions,
+            });
+        }
+
+        // Assets chart
+        if (this.assetsCanvas) {
+            const ctx = this.assetsCanvas.nativeElement.getContext('2d')!;
+            this.assetsChart?.destroy();
+            this.assetsChart = new Chart(ctx, {
+                type: 'pie',
+                data: { labels: this.assetsLabels, datasets: [{ data: this.assetsValues, backgroundColor: makeColors(this.assetsLabels.length) }] },
+                options: this.chartOptions,
+            });
         }
     }
 
