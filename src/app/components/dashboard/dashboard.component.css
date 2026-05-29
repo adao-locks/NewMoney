@@ -3,8 +3,14 @@
     gap: 1.5rem;
 }
 
+.dashboard-page {
+    padding-bottom: 0.5rem;
+}
+
 .grid-card,
-.panel-grid {
+.panel-grid,
+.list-grid,
+.chart-grid {
     display: grid;
     gap: 1rem;
 }
@@ -13,8 +19,243 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-.panel-grid {
+.panel-grid,
+.stats-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.chart-grid {
+    grid-template-columns: 1.6fr minmax(260px, 1fr);
+}
+
+.card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 1.6rem;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.05);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.chart-card {
+    min-height: 320px;
+}
+
+.chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+}
+
+.chart-header h3 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+/* Dashboard header controls */
+.dashboard-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.controls-left .search {
+    width: 320px;
+    max-width: 60vw;
+    padding: 0.6rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.03);
+}
+
+.controls-right {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.segmented {
+    display: inline-flex;
+    background: rgba(15, 23, 42, 0.04);
+    border-radius: 999px;
+    padding: 4px;
+}
+
+.seg-btn {
+    border: none;
+    background: transparent;
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    font-weight: 700;
+    color: #475569;
+}
+
+.seg-btn.active {
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    color: #0f172a;
+}
+
+.date-range {
+    color: #64748b;
+    font-weight: 600;
+}
+
+.chart-canvas {
+    margin-top: 1rem;
+    height: 220px;
+}
+
+.chart-canvas.small {
+    height: 160px;
+}
+
+/* Ensure canvases fill container and scale responsively */
+.chart-canvas {
+    width: 100%;
+}
+
+.chart-canvas canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+}
+
+/* Make tiles and grids more flexible on small screens */
+.main-kpis .tile {
+    min-height: 120px;
+}
+
+/* Ensure bar rows wrap cleanly */
+.bar-row {
+    align-items: center;
+}
+
+/* Smaller font sizes and layout tweaks for very small devices */
+@media (max-width: 520px) {
+    .tile h3 {
+        font-size: 0.95rem;
+    }
+
+    .value {
+        font-size: 1.4rem;
+    }
+
+    .chart-canvas {
+        height: 260px;
+    }
+
+    .chart-canvas.small {
+        height: 200px;
+    }
+
+    .bar-row span {
+        flex-basis: 100%;
+        min-width: 0;
+    }
+
+    .bar-row strong {
+        margin-top: 0.5rem;
+        width: 100%;
+        text-align: right;
+    }
+
+    .list-row {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        align-items: stretch;
+    }
+
+    .list-row .primary {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+}
+
+/* Top KPI tiles style like the mock */
+.main-kpis {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.main-kpis .card.tile {
+    flex: 1 1 220px;
+    min-width: 180px;
+    background: linear-gradient(135deg, #0f172a, #374151);
+    color: #fff;
+    padding: 1rem 1.2rem;
+}
+
+/* Large main chart style */
+.chart-grid .card.chart-card {
+    padding: 1rem;
+}
+
+.big-chart {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1rem;
+    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.04);
+}
+
+/* Calendar/side panel like mock */
+.calendar-panel {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1rem;
+    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.04);
+}
+
+/* Table-like list to match the mock */
+.table-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 0.6rem;
+    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.03);
+}
+
+@media (max-width: 900px) {
+    .dashboard-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .controls-left {
+        order: 2;
+    }
+
+    .controls-right {
+        order: 1;
+        justify-content: space-between;
+    }
+}
+
+/* Medium screens adjustments */
+@media (max-width: 900px) {
+    .chart-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-chart {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.06);
+    color: #0f172a;
+    font-size: 0.8rem;
+    font-weight: 700;
 }
 
 .tile {
@@ -22,11 +263,13 @@
     gap: 0.65rem;
     min-height: 170px;
     color: white;
+    padding: 1.4rem;
+    border-radius: 20px;
 }
 
 .tile h3,
 .tile span {
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.95);
 }
 
 .ganho {
@@ -56,6 +299,11 @@
     gap: 0.85rem;
 }
 
+.metric-list.compact {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
 .metric-list div,
 .bar-row,
 .asset-row {
@@ -63,7 +311,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.8rem 0;
+    padding: 0.75rem 0;
     border-bottom: 1px solid rgba(148, 163, 184, 0.16);
 }
 
@@ -79,8 +327,79 @@
     color: #64748b;
 }
 
+.bar-row {
+    flex-wrap: wrap;
+}
+
+.bar-row span {
+    flex: 1 1 40%;
+    min-width: 120px;
+}
+
+.bar-shell {
+    flex: 1 1 40%;
+    min-width: 100px;
+    background: rgba(15, 23, 42, 0.05);
+    border-radius: 999px;
+    overflow: hidden;
+    height: 10px;
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 999px;
+}
+
+.bar-fill.ganho {
+    background: #10b981;
+}
+
+.bar-fill.gasto {
+    background: #ef4444;
+}
+
+.bar-fill.investimento {
+    background: #0ea5e9;
+}
+
+.summary-chart {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+}
+
+.summary-chart.secondary {
+    margin-top: 1rem;
+}
+
+.summary-tile {
+    background: rgba(15, 23, 42, 0.04);
+    border-radius: 18px;
+    padding: 1rem;
+    display: grid;
+    gap: 0.45rem;
+}
+
+.summary-tile strong {
+    font-size: 1.35rem;
+}
+
+.summary-tile span {
+    color: #475569;
+    font-size: 0.9rem;
+}
+
+.list-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .list-row {
+    display: grid;
     grid-template-columns: 2fr 0.8fr 0.8fr 1fr;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
 }
 
 .list-row.header {
@@ -96,26 +415,64 @@
     gap: 0.25rem;
 }
 
-.status-positive,
-.status-negative {
+.asset-row {
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.status-positive {
+    color: #16a34a;
     font-weight: 700;
 }
 
+.status-negative {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+.message-box {
+    padding: 1rem 0;
+    color: #475569;
+}
+
 @media (max-width: 1040px) {
+
     .main-kpis,
-    .panel-grid {
+    .panel-grid,
+    .stats-grid,
+    .list-grid,
+    .chart-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 720px) {
+
     .main-kpis,
     .panel-grid,
-    .list-row {
+    .stats-grid,
+    .list-grid,
+    .chart-grid {
         grid-template-columns: 1fr;
     }
 
     .list-row.header {
         display: none;
+    }
+
+    .list-row,
+    .asset-row {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+    }
+
+    .bar-row {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+    }
+
+    .bar-shell {
+        width: 100%;
+        margin-top: 0.55rem;
     }
 }
