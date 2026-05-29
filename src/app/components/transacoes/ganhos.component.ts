@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TransactionService } from '../../services/transaction.service';
 import { Transaction } from '../../models/transaction.model';
+import { TransactionService } from '../../services/transaction.service';
 
 @Component({
     selector: 'app-transacoes-ganhos',
@@ -11,36 +11,46 @@ import { Transaction } from '../../models/transaction.model';
     templateUrl: './ganhos.component.html',
     styleUrls: ['./ganhos.component.css'],
 })
-export class TransacoesGanhosComponent {
-    service = new TransactionService();
+export class TransacoesGanhosComponent implements OnInit {
     editingId: string | null = null;
-    form: Partial<Transaction> = {
-        date: new Date().toISOString().substring(0, 10),
-        description: '',
-        amount: 0,
-        category: 'Salário',
-        account: '',
-        notes: '',
-    };
+    items: Transaction[] = [];
+    loading = false;
+    errorMessage = '';
+    form: Partial<Transaction> = this.getEmptyForm();
 
-    categories = ['Salário', 'Freelance', 'Vendas', 'Aluguel', 'Dividendos', 'Reembolso', 'Outros'];
+    categories = ['Salario', 'Freelance', 'Vendas', 'Aluguel', 'Dividendos', 'Reembolso', 'Outros'];
 
-    get items() {
-        return this.service.getAll().filter((t) => (t.type ?? 'income') === 'income');
+    constructor(private service: TransactionService) { }
+
+    ngOnInit() {
+        this.loadItems();
     }
 
     get isEditing() {
         return !!this.editingId;
     }
 
-    save() {
+    async loadItems() {
+        this.loading = true;
+        this.errorMessage = '';
+        try {
+            const allItems = await this.service.getAll();
+            this.items = allItems.filter((item) => (item.type ?? 'income') === 'income');
+        } catch {
+            this.errorMessage = 'Nao foi possivel carregar seus ganhos.';
+        } finally {
+            this.loading = false;
+        }
+    }
+
+    async save() {
         if (!this.form.description || !this.form.date || !this.form.amount) {
             return;
         }
 
         const payload: Omit<Transaction, 'id'> = {
-            date: this.form.date!,
-            description: this.form.description!,
+            date: this.form.date,
+            description: this.form.description,
             amount: Math.abs(Number(this.form.amount)),
             type: 'income',
             category: this.form.category,
@@ -48,13 +58,18 @@ export class TransacoesGanhosComponent {
             notes: this.form.notes,
         };
 
-        if (this.editingId) {
-            this.service.update(this.editingId, payload);
-        } else {
-            this.service.add(payload);
+        try {
+            if (this.editingId) {
+                await this.service.update(this.editingId, payload);
+            } else {
+                await this.service.add(payload);
+            }
+            this.resetForm();
+            await this.loadItems();
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Erro desconhecido';
+            this.errorMessage = `Nao foi possivel salvar o ganho. ${message}`;
         }
-
-        this.resetForm();
     }
 
     edit(item: Transaction) {
@@ -62,20 +77,30 @@ export class TransacoesGanhosComponent {
         this.form = { ...item };
     }
 
-    remove(id: string) {
-        this.service.remove(id);
-        if (this.editingId === id) {
-            this.resetForm();
+    async remove(id: string) {
+        try {
+            await this.service.remove(id);
+            if (this.editingId === id) {
+                this.resetForm();
+            }
+            await this.loadItems();
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Erro desconhecido';
+            this.errorMessage = `Nao foi possivel excluir o ganho. ${message}`;
         }
     }
 
     resetForm() {
         this.editingId = null;
-        this.form = {
+        this.form = this.getEmptyForm();
+    }
+
+    private getEmptyForm(): Partial<Transaction> {
+        return {
             date: new Date().toISOString().substring(0, 10),
             description: '',
             amount: 0,
-            category: 'Salário',
+            category: 'Salario',
             account: '',
             notes: '',
         };
