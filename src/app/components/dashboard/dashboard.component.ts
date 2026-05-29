@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TransactionService } from '../../services/transaction.service';
+import { TransactionService, emptySummary, FinancialSummary } from '../../services/transaction.service';
+import { InvestmentMovement, PersonalAsset, Transaction } from '../../models/transaction.model';
 
 @Component({
     selector: 'app-dashboard',
@@ -9,41 +10,58 @@ import { TransactionService } from '../../services/transaction.service';
     templateUrl: './dashboard.component.html',
     styleUrls: ['./dashboard.component.css'],
 })
-export class DashboardComponent {
-    service = new TransactionService();
+export class DashboardComponent implements OnInit {
+    summary: FinancialSummary = emptySummary();
+    latest: Transaction[] = [];
+    investmentsByClass: Array<{ label: string; value: number }> = [];
+    expensesByCategory: Array<{ label: string; value: number }> = [];
+    assetsByCategory: Array<{ label: string; value: number }> = [];
+    assets: PersonalAsset[] = [];
+    loading = false;
+    errorMessage = '';
 
-    get summary() {
-        return this.service.getSummary();
+    constructor(private service: TransactionService) { }
+
+    ngOnInit() {
+        this.loadDashboard();
     }
 
-    get latest() {
-        return this.service.getAll().slice(0, 8);
-    }
+    private async loadDashboard() {
+        this.loading = true;
+        this.errorMessage = '';
 
-    get investmentsByClass() {
-        return this.groupBy(this.service.getInvestmentMovements(), 'assetClass');
-    }
+        try {
+            const [allItems, assets] = await Promise.all([
+                this.service.getAll(),
+                this.service.getAssets(),
+            ]);
 
-    get expensesByCategory() {
-        return this.groupBy(
-            this.service.getAll().filter((item) => (item.type ?? 'expense') === 'expense'),
-            'category'
-        );
-    }
-
-    get assetsByCategory() {
-        const totals = new Map<string, number>();
-        this.service.getAssets().forEach((asset) => {
-            if (asset.status === 'vendido') {
-                return;
-            }
-            totals.set(asset.category, (totals.get(asset.category) ?? 0) + Number(asset.currentValue || 0));
-        });
-        return [...totals.entries()].map(([label, value]) => ({ label, value }));
-    }
-
-    get assets() {
-        return this.service.getAssets().slice(0, 5);
+            this.summary = this.service.calculateSummary(allItems, assets);
+            this.latest = allItems.slice(0, 8);
+            this.assets = assets.slice(0, 5);
+            this.investmentsByClass = this.groupBy(
+                allItems.filter((item) =>
+                    item.type === 'investment_in' || item.type === 'investment_out' || item.type === 'investment_return'
+                ),
+                'assetClass'
+            );
+            this.expensesByCategory = this.groupBy(
+                allItems.filter((item) => (item.type ?? 'expense') === 'expense'),
+                'category'
+            );
+            this.assetsByCategory = this.groupBy(
+                assets.filter((asset) => asset.status !== 'vendido').map((asset) => ({
+                    ...asset,
+                    amount: Number(asset.currentValue || 0),
+                    category: asset.category,
+                })),
+                'category'
+            );
+        } catch {
+            this.errorMessage = 'Nao foi possivel carregar o dashboard.';
+        } finally {
+            this.loading = false;
+        }
     }
 
     get cashFlowHealth() {
@@ -67,7 +85,7 @@ export class DashboardComponent {
     private groupBy(items: any[], field: string) {
         const totals = new Map<string, number>();
         items.forEach((item) => {
-            const label = item[field] || 'Sem categoria';
+            const label = item?.[field] || 'Sem categoria';
             totals.set(label, (totals.get(label) ?? 0) + Math.abs(Number(item.amount || 0)));
         });
         return [...totals.entries()].map(([label, value]) => ({ label, value }));

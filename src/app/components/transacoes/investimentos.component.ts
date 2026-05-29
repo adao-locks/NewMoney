@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TransactionService } from '../../services/transaction.service';
+import { TransactionService, emptySummary, FinancialSummary } from '../../services/transaction.service';
 import { InvestmentMovement } from '../../models/transaction.model';
 
 @Component({
@@ -11,9 +11,12 @@ import { InvestmentMovement } from '../../models/transaction.model';
     templateUrl: './investimentos.component.html',
     styleUrls: ['./investimentos.component.css'],
 })
-export class TransacoesInvestimentosComponent {
-    service = new TransactionService();
+export class TransacoesInvestimentosComponent implements OnInit {
+    items: InvestmentMovement[] = [];
+    totals: FinancialSummary = emptySummary();
     editingId: string | null = null;
+    loading = false;
+    errorMessage = '';
 
     form: Partial<InvestmentMovement> = this.getEmptyForm();
 
@@ -25,22 +28,39 @@ export class TransacoesInvestimentosComponent {
 
     assetClasses = ['Renda fixa', 'Ações', 'Fundos', 'FIIs', 'Cripto', 'Previdência', 'Exterior', 'Outros'];
 
-    get items() {
-        return this.service.getInvestmentMovements();
-    }
+    constructor(private service: TransactionService) { }
 
-    get totals() {
-        return this.service.getSummary();
+    ngOnInit() {
+        this.loadData();
     }
 
     get isEditing() {
         return !!this.editingId;
     }
 
-    save() {
+    async loadData() {
+        this.loading = true;
+        this.errorMessage = '';
+
+        try {
+            [this.items, this.totals] = await Promise.all([
+                this.service.getInvestmentMovements(),
+                this.service.getSummary(),
+            ]);
+        } catch {
+            this.errorMessage = 'Nao foi possivel carregar os investimentos.';
+        } finally {
+            this.loading = false;
+        }
+    }
+
+    async save() {
         if (!this.form.description || !this.form.date || !this.form.amount || !this.form.investmentName || !this.form.type) {
             return;
         }
+
+        this.loading = true;
+        this.errorMessage = '';
 
         const normalizedAmount = Math.abs(Number(this.form.amount));
         const signedAmount = this.form.type === 'investment_out' ? -normalizedAmount : normalizedAmount;
@@ -58,13 +78,20 @@ export class TransacoesInvestimentosComponent {
             notes: this.form.notes,
         };
 
-        if (this.editingId) {
-            this.service.update(this.editingId, payload);
-        } else {
-            this.service.add(payload);
+        try {
+            if (this.editingId) {
+                await this.service.update(this.editingId, payload);
+            } else {
+                await this.service.add(payload);
+            }
+            this.resetForm();
+            await this.loadData();
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Erro desconhecido';
+            this.errorMessage = `Nao foi possivel salvar o movimento. ${message}`;
+        } finally {
+            this.loading = false;
         }
-
-        this.resetForm();
     }
 
     edit(item: InvestmentMovement) {
@@ -72,10 +99,21 @@ export class TransacoesInvestimentosComponent {
         this.form = { ...item, amount: Math.abs(item.amount) };
     }
 
-    remove(id: string) {
-        this.service.remove(id);
-        if (this.editingId === id) {
-            this.resetForm();
+    async remove(id: string) {
+        this.loading = true;
+        this.errorMessage = '';
+
+        try {
+            await this.service.remove(id);
+            if (this.editingId === id) {
+                this.resetForm();
+            }
+            await this.loadData();
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Erro desconhecido';
+            this.errorMessage = `Nao foi possivel excluir o movimento. ${message}`;
+        } finally {
+            this.loading = false;
         }
     }
 

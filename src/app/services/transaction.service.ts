@@ -1,152 +1,190 @@
+import { Injectable } from '@angular/core';
+import {
+  CollectionReference,
+  DocumentData,
+  DocumentSnapshot,
+  QueryDocumentSnapshot,
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  updateDoc,
+  where,
+} from 'firebase/firestore';
+import { AuthService } from './auth.service';
+import { firebaseDb } from '../firebase';
 import { InvestmentMovement, PersonalAsset, Transaction } from '../models/transaction.model';
-import { firebaseAuth } from '../firebase';
 
-const STORAGE_KEY = 'desk_transactions_v1';
-const ASSETS_STORAGE_KEY = 'desk_assets_v1';
+export interface FinancialSummary {
+  ganhos: number;
+  gastos: number;
+  gastosTotal: number;
+  balance: number;
+  aportes: number;
+  resgates: number;
+  rendimentos: number;
+  posicaoInvestimentos: number;
+  patrimonioBens: number;
+  valorizacaoBens: number;
+  patrimonioTotal: number;
+}
 
+export const emptySummary = (): FinancialSummary => ({
+  ganhos: 0,
+  gastos: 0,
+  gastosTotal: 0,
+  balance: 0,
+  aportes: 0,
+  resgates: 0,
+  rendimentos: 0,
+  posicaoInvestimentos: 0,
+  patrimonioBens: 0,
+  valorizacaoBens: 0,
+  patrimonioTotal: 0,
+});
+
+@Injectable({ providedIn: 'root' })
 export class TransactionService {
-  private items: Transaction[] = [];
-  private assets: PersonalAsset[] = [];
+  constructor(private auth: AuthService) { }
 
-  constructor() {
-    this.load();
-  }
-
-  private load() {
-    try {
-      const storageKey = this.getStorageKey(STORAGE_KEY);
-      this.migrateLegacyData(STORAGE_KEY, storageKey);
-      const raw = localStorage.getItem(storageKey);
-      this.items = (raw ? JSON.parse(raw) : []).map((item: Transaction) => ({
-        ...item,
-        type: item.type ?? (item.amount >= 0 ? 'income' : 'expense'),
-      }));
-    } catch (e) {
-      this.items = [];
+  private async requireUser() {
+    const user = this.auth.currentUser ?? await this.auth.authReady;
+    if (!user) {
+      throw new Error('Usuario nao autenticado.');
     }
-
-    try {
-      const assetsStorageKey = this.getStorageKey(ASSETS_STORAGE_KEY);
-      this.migrateLegacyData(ASSETS_STORAGE_KEY, assetsStorageKey);
-      const rawAssets = localStorage.getItem(assetsStorageKey);
-      this.assets = rawAssets ? JSON.parse(rawAssets) : [];
-    } catch (e) {
-      this.assets = [];
-    }
+    return user;
   }
 
-  private save() {
-    localStorage.setItem(this.getStorageKey(STORAGE_KEY), JSON.stringify(this.items));
+  private async userCollection(name: 'transactions' | 'assets') {
+    const user = await this.requireUser();
+    return collection(firebaseDb, 'users', user.uid, name) as CollectionReference<DocumentData>;
   }
 
-  private saveAssets() {
-    localStorage.setItem(this.getStorageKey(ASSETS_STORAGE_KEY), JSON.stringify(this.assets));
+  private async userDoc(name: 'transactions' | 'assets', id: string) {
+    const user = await this.requireUser();
+    return doc(firebaseDb, 'users', user.uid, name, id);
   }
 
-  private getStorageKey(key: string) {
-    const uid = firebaseAuth.currentUser?.uid;
-    return uid ? `${key}_${uid}` : key;
+  private clean<T extends Record<string, unknown>>(data: T) {
+    return Object.fromEntries(
+      Object.entries(data).filter(([, value]) => value !== undefined)
+    ) as T;
   }
 
-  private migrateLegacyData(key: string, userKey: string) {
-    if (key === userKey || localStorage.getItem(userKey)) {
-      return;
-    }
-
-    const legacy = localStorage.getItem(key);
-    if (legacy) {
-      localStorage.setItem(userKey, legacy);
-    }
-  }
-
-  getAll(): Transaction[] {
-    return [...this.items].sort((a, b) => (a.date < b.date ? 1 : -1));
-  }
-
-  getById(id: string) {
-    return this.items.find((i) => i.id === id) ?? null;
-  }
-
-  add(tx: Omit<Transaction, 'id'>) {
-    const item: Transaction = {
-      ...tx,
-      type: tx.type ?? (tx.amount >= 0 ? 'income' : 'expense'),
-      id: crypto?.randomUUID?.() ?? Date.now().toString(),
+  private transactionFromDoc(snapshot: DocumentSnapshot<DocumentData>): Transaction {
+    const data = snapshot.data() as Omit<Transaction, 'id'>;
+    return {
+      ...data,
+      id: snapshot.id,
+      type: data.type ?? (data.amount >= 0 ? 'income' : 'expense'),
     };
-    this.items.push(item);
-    this.save();
-    return item;
   }
 
-  update(id: string, tx: Omit<Transaction, 'id'>) {
-    const index = this.items.findIndex((i) => i.id === id);
-    if (index === -1) {
+  private assetFromDoc(snapshot: QueryDocumentSnapshot<DocumentData>): PersonalAsset {
+    return {
+      ...(snapshot.data() as Omit<PersonalAsset, 'id'>),
+      id: snapshot.id,
+    };
+  }
+
+  async getAll(): Promise<Transaction[]> {
+    const transactions = await this.userCollection('transactions');
+    const snapshot = await getDocs(query(transactions, orderBy('date', 'desc')));
+    return snapshot.docs.map((item) => this.transactionFromDoc(item));
+  }
+
+  async getById(id: string) {
+    const transaction = await this.userDoc('transactions', id);
+    const snapshot = await getDoc(transaction);
+    if (!snapshot.exists()) {
       return null;
     }
-    this.items[index] = { ...this.items[index], ...tx };
-    this.save();
-    return this.items[index];
+    return this.transactionFromDoc(snapshot as QueryDocumentSnapshot<DocumentData>);
   }
 
-  remove(id: string) {
-    this.items = this.items.filter((i) => i.id !== id);
-    this.save();
+  async add(tx: Omit<Transaction, 'id'>) {
+    const payload = this.clean({
+      ...tx,
+      type: tx.type ?? (tx.amount >= 0 ? 'income' : 'expense'),
+    });
+    const transactions = await this.userCollection('transactions');
+    const reference = await addDoc(transactions, payload);
+    return { ...payload, id: reference.id } as Transaction;
   }
 
-  getInvestmentMovements(): InvestmentMovement[] {
-    return this.getAll().filter((i) =>
-      i.type === 'investment_in' || i.type === 'investment_out' || i.type === 'investment_return'
+  async update(id: string, tx: Omit<Transaction, 'id'>) {
+    const transaction = await this.userDoc('transactions', id);
+    await updateDoc(transaction, this.clean({ ...tx }));
+    return { ...tx, id } as Transaction;
+  }
+
+  async remove(id: string) {
+    const transaction = await this.userDoc('transactions', id);
+    await deleteDoc(transaction);
+  }
+
+  async getInvestmentMovements(): Promise<InvestmentMovement[]> {
+    const allItems = await this.getAll();
+    return allItems.filter((item) =>
+      item.type === 'investment_in' || item.type === 'investment_out' || item.type === 'investment_return'
     ) as InvestmentMovement[];
   }
 
-  getAssets(): PersonalAsset[] {
-    return [...this.assets].sort((a, b) => (a.name > b.name ? 1 : -1));
+  async getAssets(): Promise<PersonalAsset[]> {
+    const assets = await this.userCollection('assets');
+    const snapshot = await getDocs(query(assets, orderBy('name', 'asc')));
+    return snapshot.docs.map((item) => this.assetFromDoc(item));
   }
 
-  addAsset(asset: Omit<PersonalAsset, 'id'>) {
-    const item: PersonalAsset = { ...asset, id: crypto?.randomUUID?.() ?? Date.now().toString() };
-    this.assets.push(item);
-    this.saveAssets();
-    return item;
+  async addAsset(asset: Omit<PersonalAsset, 'id'>) {
+    const payload = this.clean({ ...asset });
+    const assets = await this.userCollection('assets');
+    const reference = await addDoc(assets, payload);
+    return { ...payload, id: reference.id } as PersonalAsset;
   }
 
-  updateAsset(id: string, asset: Omit<PersonalAsset, 'id'>) {
-    const index = this.assets.findIndex((i) => i.id === id);
-    if (index === -1) {
-      return null;
-    }
-    this.assets[index] = { ...this.assets[index], ...asset };
-    this.saveAssets();
-    return this.assets[index];
+  async updateAsset(id: string, asset: Omit<PersonalAsset, 'id'>) {
+    const assetDoc = await this.userDoc('assets', id);
+    await updateDoc(assetDoc, this.clean({ ...asset }));
+    return { ...asset, id } as PersonalAsset;
   }
 
-  removeAsset(id: string) {
-    this.assets = this.assets.filter((i) => i.id !== id);
-    this.saveAssets();
+  async removeAsset(id: string) {
+    const assetDoc = await this.userDoc('assets', id);
+    await deleteDoc(assetDoc);
   }
 
-  getSummary() {
-    const ganhos = this.items
-      .filter((i) => (i.type ?? 'income') === 'income')
-      .reduce((s, i) => s + Math.abs(i.amount), 0);
-    const gastos = this.items
-      .filter((i) => (i.type ?? 'expense') === 'expense')
-      .reduce((s, i) => s + Math.abs(i.amount), 0);
-    const aportes = this.items
-      .filter((i) => i.type === 'investment_in')
-      .reduce((s, i) => s + Math.abs(i.amount), 0);
-    const resgates = this.items
-      .filter((i) => i.type === 'investment_out')
-      .reduce((s, i) => s + Math.abs(i.amount), 0);
-    const rendimentos = this.items
-      .filter((i) => i.type === 'investment_return')
-      .reduce((s, i) => s + Math.abs(i.amount), 0);
-    const patrimonioBens = this.assets
-      .filter((i) => i.status !== 'vendido')
-      .reduce((s, i) => s + Number(i.currentValue || 0), 0);
-    const custoBens = this.assets
-      .filter((i) => i.status !== 'vendido')
-      .reduce((s, i) => s + Number(i.acquisitionValue || 0), 0);
+  async getSummary() {
+    const [transactions, assets] = await Promise.all([this.getAll(), this.getAssets()]);
+    return this.calculateSummary(transactions, assets);
+  }
+
+  calculateSummary(items: Transaction[], assets: PersonalAsset[]): FinancialSummary {
+    const ganhos = items
+      .filter((item) => (item.type ?? 'income') === 'income')
+      .reduce((sum, item) => sum + Math.abs(item.amount), 0);
+    const gastos = items
+      .filter((item) => (item.type ?? 'expense') === 'expense')
+      .reduce((sum, item) => sum + Math.abs(item.amount), 0);
+    const aportes = items
+      .filter((item) => item.type === 'investment_in')
+      .reduce((sum, item) => sum + Math.abs(item.amount), 0);
+    const resgates = items
+      .filter((item) => item.type === 'investment_out')
+      .reduce((sum, item) => sum + Math.abs(item.amount), 0);
+    const rendimentos = items
+      .filter((item) => item.type === 'investment_return')
+      .reduce((sum, item) => sum + Math.abs(item.amount), 0);
+    const patrimonioBens = assets
+      .filter((item) => item.status !== 'vendido')
+      .reduce((sum, item) => sum + Number(item.currentValue || 0), 0);
+    const custoBens = assets
+      .filter((item) => item.status !== 'vendido')
+      .reduce((sum, item) => sum + Number(item.acquisitionValue || 0), 0);
     const posicaoInvestimentos = aportes - resgates + rendimentos;
     const fluxoCaixa = ganhos - gastos - aportes + resgates + rendimentos;
     const patrimonioTotal = fluxoCaixa + posicaoInvestimentos + patrimonioBens;
