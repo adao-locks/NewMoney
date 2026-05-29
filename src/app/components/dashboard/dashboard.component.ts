@@ -18,6 +18,7 @@ export class DashboardComponent implements OnInit {
     assetsByCategory: Array<{ label: string; value: number }> = [];
     assets: PersonalAsset[] = [];
     loading = false;
+    readonly Math = Math;
     errorMessage = '';
 
     constructor(private service: TransactionService) { }
