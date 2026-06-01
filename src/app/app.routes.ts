@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './components/home/home.component';
 import { SobreComponent } from './components/sobre/sobre.component';
 import { ContatoComponent } from './components/contato/contato.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
@@ -24,8 +23,8 @@ export const routes: Routes = [
         children: [
             {
                 path: '',
-                component: HomeComponent,
-                data: { title: 'NewMoney - Home' },
+                component: DashboardComponent,
+                data: { title: 'NewMoney - Dashboard' },
             },
             {
                 path: 'sobre',
