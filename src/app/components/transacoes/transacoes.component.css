@@ -2,26 +2,53 @@
     display: flex;
     gap: 0.75rem;
     flex-wrap: wrap;
+    animation: slideUp 0.5s ease-out;
 }
 
 .tabs a {
     padding: 0.85rem 1.2rem;
     border-radius: 999px;
     text-decoration: none;
-    color: #334155;
-    background: #f8fafc;
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    transition: all 0.2s ease;
+    color: var(--text-muted);
+    background: var(--surface-2);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    transition: all 0.3s ease;
+    animation: slideUp 0.4s ease-out forwards;
+    opacity: 0;
+}
+
+.tabs a:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.tabs a:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.tabs a:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.tabs a:nth-child(4) {
+    animation-delay: 0.25s;
 }
 
 .tabs a.active,
 .tabs a:hover {
-    background: #2563eb;
+    background: var(--accent);
     color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(16, 185, 129, 0.3);
 }
 
 .card {
     margin-bottom: 1rem;
+    animation: slideUp 0.6s ease-out 0.3s both;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 20px 50px rgba(16, 185, 129, 0.1);
 }
 
 @media (max-width: 640px) {

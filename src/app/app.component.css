@@ -10,7 +10,7 @@ main.container {
 }
 
 footer {
-    color: #475569;
+    color: var(--text-muted);
     font-size: 0.95rem;
     padding: 1.5rem 0;
 }
@@ -19,7 +19,7 @@ footer {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    color: #475569;
+    color: var(--text-muted);
     font-size: 0.9rem;
     min-width: 0;
 }
@@ -46,4 +46,9 @@ footer {
     .user-menu span {
         max-width: calc(100vw - 7rem);
     }
+}
+
+.theme-toggle {
+    min-width: auto;
+    padding: 0.55rem 0.9rem;
 }

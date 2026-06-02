@@ -2,12 +2,40 @@
   <section class="page-header">
     <div>
       <h1>Dashboard Financeiro</h1>
-      <p class="section-intro">Uma visão fácil de entender dos seus valores, com painéis mais claros e
-        responsivos.</p>
+      <p class="section-intro">{{ periodLabel }}</p>
+    </div>
+    <div class="dashboard-controls">
+      <div class="calendar-controls">
+        <label class="period-input" *ngIf="period === 'day'">
+          <input type="date" [(ngModel)]="selectedDate" (change)="onReferenceChange()" />
+        </label>
+        <label class="period-input" *ngIf="period === 'month'">
+          <input type="month" [(ngModel)]="selectedMonth" (change)="onReferenceChange()" />
+        </label>
+        <label class="period-input" *ngIf="period === 'year'">
+          <input type="number" min="1900" max="9999" step="1" [(ngModel)]="selectedYear"
+            (change)="onReferenceChange()" />
+        </label>
+      </div>
+
+      <div class="segmented" aria-label="Filtro de período">
+        <button type="button" class="seg-btn" [class.active]="period === 'day'" (click)="setPeriod('day')">Dia</button>
+        <button type="button" class="seg-btn" [class.active]="period === 'month'"
+          (click)="setPeriod('month')">Mês</button>
+        <button type="button" class="seg-btn" [class.active]="period === 'year'"
+          (click)="setPeriod('year')">Ano</button>
+        <button type="button" class="seg-btn" [class.active]="period === 'total'"
+          (click)="setPeriod('total')">Total</button>
+      </div>
     </div>
   </section>
 
   <div class="grid-card main-kpis">
+    <div class="card tile cadastros">
+      <h3>Cadastros</h3>
+      <p class="value">{{ totalCadastros }}</p>
+      <span>{{ filteredTransactionsCount }} movimentações · {{ filteredAssetsCount }} bens</span>
+    </div>
     <div class="card tile saldo">
       <h3>Patrimônio total</h3>
       <p class="value">{{ summary.patrimonioTotal | number:'1.2-2' }}</p>
@@ -181,21 +209,6 @@
       </div>
     </div>
   </div>
-
-  <section class="dashboard-controls">
-    <div class="controls-left">
-      <input #searchInput class="search" placeholder="Search..." (input)="onSearch(searchInput.value)" />
-    </div>
-    <div class="controls-right">
-      <div class="segmented">
-        <button class="seg-btn" (click)="setPeriod('day')" [class.active]="period === 'day'">Day</button>
-        <button class="seg-btn" (click)="setPeriod('week')" [class.active]="period === 'week'">Week</button>
-        <button class="seg-btn" (click)="setPeriod('month')" [class.active]="period === 'month'">Month</button>
-        <button class="seg-btn" (click)="setPeriod('year')" [class.active]="period === 'year'">Year</button>
-      </div>
-      <div class="date-range" (click)="changeDateRange()">{{ dateRange }}</div>
-    </div>
-  </section>
 
   <div class="card">
     <h3>Últimas Movimentações</h3>

@@ -7,11 +7,17 @@
 
 .login-panel {
     width: min(100%, 440px);
-    background: rgba(255, 255, 255, 0.96);
-    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: var(--card);
+    border: 1px solid var(--border);
     border-radius: 8px;
-    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--shadow);
     padding: 1.5rem;
+    animation: slideUp 0.5s ease-out;
+    transition: all 0.3s ease;
+}
+
+.login-panel:hover {
+    box-shadow: 0 20px 50px rgba(16, 185, 129, 0.1);
 }
 
 .login-header {
@@ -19,16 +25,17 @@
     gap: 1rem;
     align-items: center;
     margin-bottom: 1.5rem;
+    animation: slideUp 0.6s ease-out 0.1s both;
 }
 
 .login-header h1 {
-    color: #1e3a8a;
+    color: var(--accent-strong);
     font-size: 1.75rem;
     line-height: 1.2;
 }
 
 .login-header p {
-    color: #475569;
+    color: var(--text-muted);
 }
 
 .login-form {
@@ -38,6 +45,16 @@
 
 .field-group {
     display: grid;
+    animation: slideUp 0.5s ease-out forwards;
+    opacity: 0;
+}
+
+.field-group:nth-child(1) {
+    animation-delay: 0.3s;
+}
+
+.field-group:nth-child(2) {
+    animation-delay: 0.4s;
 }
 
 .auth-error {
@@ -45,19 +62,22 @@
     background: #fee2e2;
     border-radius: 8px;
     padding: 0.85rem 1rem;
+    animation: slideUp 0.3s ease-out;
+    border-left: 4px solid #f97316;
 }
 
 .link-button {
     width: 100%;
     margin-top: 1rem;
     background: transparent;
-    color: #1d4ed8;
+    color: var(--accent-strong);
     box-shadow: none;
+    animation: slideUp 0.6s ease-out 0.5s both;
 }
 
 .link-button:hover {
-    background: rgba(59, 130, 246, 0.08);
-    transform: none;
+    background: var(--accent-soft);
+    transform: translateX(4px);
 }
 
 button:disabled {
