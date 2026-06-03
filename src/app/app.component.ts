@@ -12,8 +12,22 @@ import { AuthService } from './services/auth.service';
 })
 export class AppComponent {
   title = 'NewMoney - Gestão financeira';
+  darkMode = false;
 
-  constructor(public auth: AuthService) { }
+  constructor(public auth: AuthService) {
+    this.darkMode = localStorage.getItem('theme') === 'dark';
+    this.setThemeClass(this.darkMode);
+  }
+
+  toggleTheme() {
+    this.darkMode = !this.darkMode;
+    this.setThemeClass(this.darkMode);
+  }
+
+  private setThemeClass(isDark: boolean) {
+    document.body.classList.toggle('theme-dark', isDark);
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  }
 
   logout() {
     this.auth.logout();

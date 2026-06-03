@@ -7,6 +7,7 @@ import { TransacoesGanhosComponent } from './components/transacoes/ganhos.compon
 import { TransacoesGastosComponent } from './components/transacoes/gastos.component';
 import { TransacoesInvestimentosComponent } from './components/transacoes/investimentos.component';
 import { TransacoesBensComponent } from './components/transacoes/bens.component';
+import { MovimentacoesComponent } from './components/transacoes/movimentacoes.component';
 import { LoginComponent } from './components/login/login.component';
 import { authChildGuard, authGuard } from './guards/auth.guard';
 
@@ -46,6 +47,10 @@ export const routes: Routes = [
                 component: TransacoesComponent,
                 children: [
                     {
+                        path: 'movimentacoes',
+                        component: MovimentacoesComponent,
+                    },
+                    {
                         path: 'ganhos',
                         component: TransacoesGanhosComponent,
                     },
@@ -63,7 +68,7 @@ export const routes: Routes = [
                     },
                     {
                         path: '',
-                        redirectTo: 'ganhos',
+                        redirectTo: 'movimentacoes',
                         pathMatch: 'full',
                     },
                 ],

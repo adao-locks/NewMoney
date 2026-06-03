@@ -1,0 +1,180 @@
+<div class="movimentacoes-container">
+  <!-- Header -->
+  <section class="page-header">
+    <div>
+      <h1>Movimentações</h1>
+      <p class="section-intro">Visualize e analise todas as suas transações com filtros avançados.</p>
+    </div>
+  </section>
+
+  <!-- Estatísticas -->
+  <div class="stats-grid">
+    <div class="stat-card total">
+      <div class="stat-label">Total de Transações</div>
+      <div class="stat-value">{{ stats.totalTransactions }}</div>
+    </div>
+    <div class="stat-card income">
+      <div class="stat-label">Receitas</div>
+      <div class="stat-value positive">+{{ stats.totalIncome | number:'1.2-2' }}</div>
+    </div>
+    <div class="stat-card expense">
+      <div class="stat-label">Despesas</div>
+      <div class="stat-value negative">-{{ stats.totalExpense | number:'1.2-2' }}</div>
+    </div>
+    <div class="stat-card balance" [class.positive]="stats.netBalance >= 0" [class.negative]="stats.netBalance < 0">
+      <div class="stat-label">Saldo Líquido</div>
+      <div class="stat-value" [class.positive]="stats.netBalance >= 0" [class.negative]="stats.netBalance < 0">
+        {{ stats.netBalance >= 0 ? '+' : '-' }}{{ Math.abs(stats.netBalance) | number:'1.2-2' }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card filters-card">
+    <div class="filters-header">
+      <h2>Filtros de Busca</h2>
+      <button *ngIf="hasActiveFilters" type="button" class="secondary small" (click)="resetFilters()">
+        Limpar Filtros
+      </button>
+    </div>
+
+    <div class="filters-grid">
+      <!-- Busca por texto -->
+      <div class="filter-group">
+        <label for="search">Busca Rápida</label>
+        <input type="text" id="search" [(ngModel)]="filters.searchText" (input)="applyFilters()"
+          placeholder="Descrição, categoria, conta..." class="search-input" />
+      </div>
+
+      <!-- Data de início -->
+      <div class="filter-group">
+        <label for="dateFrom">Data De</label>
+        <input type="date" id="dateFrom" [(ngModel)]="filters.dateFrom" (change)="applyFilters()" />
+      </div>
+
+      <!-- Data de término -->
+      <div class="filter-group">
+        <label for="dateTo">Data Até</label>
+        <input type="date" id="dateTo" [(ngModel)]="filters.dateTo" (change)="applyFilters()" />
+      </div>
+
+      <!-- Categoria -->
+      <div class="filter-group">
+        <label for="category">Categoria</label>
+        <select id="category" [(ngModel)]="filters.category" (change)="applyFilters()">
+          <option value="">Todas as categorias</option>
+          <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+        </select>
+      </div>
+
+      <!-- Tipo de transação -->
+      <div class="filter-group">
+        <label for="type">Tipo</label>
+        <select id="type" [(ngModel)]="filters.type" (change)="applyFilters()">
+          <option value="">Todos os tipos</option>
+          <option *ngFor="let t of transactionTypes" [value]="t.value">{{ t.label }}</option>
+        </select>
+      </div>
+
+      <!-- Valor mínimo -->
+      <div class="filter-group">
+        <label for="minAmount">Valor Mínimo</label>
+        <input type="number" id="minAmount" [(ngModel)]="filters.minAmount" (change)="applyFilters()" placeholder="0.00"
+          step="0.01" />
+      </div>
+
+      <!-- Valor máximo -->
+      <div class="filter-group">
+        <label for="maxAmount">Valor Máximo</label>
+        <input type="number" id="maxAmount" [(ngModel)]="filters.maxAmount" (change)="applyFilters()" placeholder="0.00"
+          step="0.01" />
+      </div>
+
+      <!-- Ordenação -->
+      <div class="filter-group">
+        <label for="sortBy">Ordenar Por</label>
+        <select id="sortBy" [(ngModel)]="sortBy" (change)="onSortChange()">
+          <option value="date-desc">Data (Mais Recente)</option>
+          <option value="date-asc">Data (Mais Antiga)</option>
+          <option value="amount-desc">Valor (Maior)</option>
+          <option value="amount-asc">Valor (Menor)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="filters-actions">
+      <button type="button" class="primary" (click)="exportToCSV()">
+        📥 Exportar para CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- Mensagem de erro -->
+  <div *ngIf="errorMessage" class="message-box error">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Carregando -->
+  <div *ngIf="loading" class="message-box loading">
+    Carregando movimentações...
+  </div>
+
+  <!-- Tabela de transações -->
+  <div class="card transactions-card" *ngIf="!loading">
+    <h2>
+      Movimentações
+      <span class="transaction-count">({{ filteredTransactions.length }} de {{ allTransactions.length }})</span>
+    </h2>
+
+    <div *ngIf="filteredTransactions.length === 0" class="message-box empty">
+      <p>Nenhuma movimentação encontrada com os filtros aplicados.</p>
+    </div>
+
+    <div *ngIf="filteredTransactions.length > 0" class="table-wrapper">
+      <table class="transactions-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Descrição</th>
+            <th>Categoria</th>
+            <th>Tipo</th>
+            <th class="amount-col">Valor</th>
+            <th class="actions-col">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let transaction of filteredTransactions" class="transaction-row"
+            [class.income]="getTypeColor(transaction.type) === 'positive'"
+            [class.expense]="getTypeColor(transaction.type) === 'negative'">
+            <td class="date-col">
+              <span class="date-value">{{ transaction.date | date:'dd/MM/yy' }}</span>
+              <span class="date-time">{{ transaction.date | date:'HH:mm' }}</span>
+            </td>
+            <td class="description-col">
+              <div class="description-main">{{ transaction.description }}</div>
+              <div *ngIf="transaction.notes" class="description-notes">
+                {{ transaction.notes }}
+              </div>
+            </td>
+            <td class="category-col">
+              <span class="badge">{{ transaction.category || 'Sem categoria' }}</span>
+            </td>
+            <td class="type-col">
+              <span class="type-badge" [class]="getTypeColor(transaction.type)">
+                {{ getTypeLabel(transaction.type) }}
+              </span>
+            </td>
+            <td class="amount-col" [class]="getTypeColor(transaction.type)">
+              <span class="amount-value">{{ getAmount(transaction) }}</span>
+            </td>
+            <td class="actions-col">
+              <button type="button" class="danger small" (click)="deleteTransaction(transaction.id)" title="Excluir">
+                🗑️
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

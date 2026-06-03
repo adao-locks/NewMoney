@@ -1,30 +1,48 @@
 .page-section {
     display: grid;
     gap: 1.5rem;
+    animation: slideUp 0.5s ease-out;
 }
 
 .summary-strip {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
+    animation: slideUp 0.6s ease-out 0.1s both;
 }
 
 .summary-strip div {
-    background: white;
-    border: 1px solid rgba(148, 163, 184, 0.18);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 18px;
     padding: 1rem;
+    animation: slideUp 0.5s ease-out forwards;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.summary-strip div:nth-child(1) {
+    animation-delay: 0.15s;
+}
+
+.summary-strip div:nth-child(2) {
+    animation-delay: 0.25s;
+}
+
+.summary-strip div:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.15);
 }
 
 .summary-strip span,
 .muted {
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 0.95rem;
 }
 
 .summary-strip strong {
     display: block;
-    color: #0f172a;
+    color: var(--text);
     font-size: 1.25rem;
 }
 
@@ -32,12 +50,31 @@
     display: grid;
     gap: 1rem;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    animation: slideUp 0.6s ease-out 0.2s both;
 }
 
 .field-group {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    animation: slideUp 0.5s ease-out forwards;
+    opacity: 0;
+}
+
+.field-group:nth-child(1) {
+    animation-delay: 0.3s;
+}
+
+.field-group:nth-child(2) {
+    animation-delay: 0.35s;
+}
+
+.field-group:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+.field-group:nth-child(4) {
+    animation-delay: 0.45s;
 }
 
 .full-width {
@@ -49,6 +86,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
+    animation: slideUp 0.6s ease-out 0.5s both;
 }
 
 .actions-row {
@@ -57,6 +95,31 @@
 
 .list-row {
     grid-template-columns: 2fr 1fr auto;
+    animation: slideUp 0.4s ease-out forwards;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.list-row:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.list-row:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.list-row:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.list-row:nth-child(4) {
+    animation-delay: 0.25s;
+}
+
+.list-row:hover {
+    background: var(--surface-2);
+    padding-left: 0.5rem;
+    border-radius: 8px;
 }
 
 .list-row div:nth-child(2) {
@@ -65,9 +128,12 @@
 
 button {
     min-width: 110px;
+    transition: all 0.3s ease;
+}
 }
 
 @media (max-width: 840px) {
+
     .summary-strip,
     .form-grid,
     .list-row {
