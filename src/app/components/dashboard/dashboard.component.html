@@ -77,19 +77,21 @@
             <div class="progress-fill gasto"
               [style.width.%]="summary.ganhos ? Math.min((summary.gastosTotal / summary.ganhos) * 100, 100) : 0">
             </div>
-
-            <div style="margin-top:1rem">
-              <h4 style="margin:0 0 0.75rem 0">Total Revenue</h4>
-              <div style="display:flex;gap:1rem;align-items:flex-end">
-                <div style="flex:1">
-                  <canvas #mainChartCanvas></canvas>
-                </div>
-                <div style="width:220px" class="calendar-panel">
-                  <h5 style="margin:0 0 0.6rem 0">September 2024</h5>
-                  <div style="height:120px;display:flex;align-items:center;justify-content:center;color:#64748b">
-                    Calendar</div>
-                  <div style="margin-top:0.8rem">Community growth <strong style="float:right">65%</strong></div>
-                </div>
+          </div>
+        </div>
+        <div class="revenue-widget">
+          <h4>Total Revenue</h4>
+          <div class="revenue-layout">
+            <div class="revenue-chart">
+              <canvas #mainChartCanvas></canvas>
+            </div>
+            <div class="calendar-panel">
+              <h5>September 2024</h5>
+              <div class="calendar-placeholder">
+                Calendar</div>
+              <div class="calendar-growth">
+                <span>Community growth</span>
+                <strong>65%</strong>
               </div>
             </div>
           </div>
@@ -161,7 +163,7 @@
         <canvas #investmentsCanvas></canvas>
       </div>
 
-      <h4 style="margin-top:1rem">Detalhes dos Investimentos</h4>
+      <h4 class="details-title">Detalhes dos Investimentos</h4>
       <div *ngIf="investmentsDetails.length === 0" class="message-box">Nenhum movimento de investimento.</div>
       <div *ngFor="let inv of investmentsDetails" class="list-row">
         <div class="primary">
