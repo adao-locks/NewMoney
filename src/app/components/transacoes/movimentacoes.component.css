@@ -151,7 +151,7 @@
 .filter-group input,
 .filter-group select {
   padding: 0.75rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid #10b9813d;
   border-radius: 0.5rem;
   background: var(--input-background);
   color: var(--text-primary);
