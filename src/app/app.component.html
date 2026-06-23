@@ -12,11 +12,15 @@
         <a routerLink="/contato" routerLinkActive="active">Contato</a>
       </div>
       <div class="user-menu">
-        <span>{{ user.displayName || user.email }}</span>
+        <button type="button" class="secondary nav-user" routerLink="/perfil" routerLinkActive="active">
+          {{ user.displayName || user.email }}
+        </button>
         <button type="button" class="secondary theme-toggle" (click)="toggleTheme()">
           {{ darkMode ? 'Modo Claro' : 'Modo Escuro' }}
         </button>
-        <button type="button" class="secondary nav-logout" (click)="logout()">Sair</button>
+        <button type="button" class="secondary nav-logout" (click)="logout()">
+          Sair
+        </button>
       </div>
     </div>
   </nav>

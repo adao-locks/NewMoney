@@ -1,0 +1,143 @@
+<section class="profile-page" *ngIf="user$ | async as user">
+  <header class="page-header">
+    <div>
+      <h1>Perfil</h1>
+      <p class="section-intro">Gerencie as informações da sua conta NewMoney.</p>
+    </div>
+  </header>
+
+  <div class="profile-grid">
+    <section class="card profile-summary">
+      <div class="avatar" aria-hidden="true">
+        {{ (user.displayName || user.email || 'U').charAt(0).toUpperCase() }}
+      </div>
+      <div>
+        <h2>{{ user.displayName || 'Usuario NewMoney' }}</h2>
+        <p>{{ user.email }}</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Dados da conta</h2>
+
+      <dl class="profile-details">
+        <div>
+          <dt>E-mail</dt>
+          <dd>{{ user.email }}</dd>
+        </div>
+        <div>
+          <dt>Metodo de acesso</dt>
+          <dd>{{ providerLabel(user) }}</dd>
+        </div>
+        <div>
+          <dt>Criada em</dt>
+          <dd>{{ user.metadata.creationTime | date: 'dd/MM/yyyy HH:mm' }}</dd>
+        </div>
+        <div>
+          <dt>Ultimo acesso</dt>
+          <dd>{{ user.metadata.lastSignInTime | date: 'dd/MM/yyyy HH:mm' }}</dd>
+        </div>
+        <div>
+          <dt>ID do usuario</dt>
+          <dd class="uid">{{ user.uid }}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="card profile-form-card">
+      <h2>Alterar informações</h2>
+
+      <form class="profile-form" (ngSubmit)="saveProfile()">
+        <label for="displayName">Nome</label>
+        <input id="displayName" name="displayName" type="text" [(ngModel)]="displayName" maxlength="60"
+          autocomplete="name" placeholder="Como voce quer aparecer no app" />
+
+        <div class="form-actions">
+          <button type="submit" [disabled]="saving">
+            {{ saving ? 'Salvando...' : 'Salvar perfil' }}
+          </button>
+        </div>
+
+        <p class="message success" *ngIf="message">{{ message }}</p>
+        <p class="message error" *ngIf="error">{{ error }}</p>
+      </form>
+    </section>
+
+    <section class="card profile-form-card">
+      <h2>Alterar senha</h2>
+
+      <form class="profile-form" *ngIf="canChangePassword(user); else passwordUnavailable"
+        (ngSubmit)="changePassword()">
+        <div class="password-grid">
+          <div>
+            <label for="currentPassword">Senha atual</label>
+            <input id="currentPassword" name="currentPassword" type="password" [(ngModel)]="currentPassword"
+              autocomplete="current-password" required />
+          </div>
+
+          <div>
+            <label for="newPassword">Nova senha</label>
+            <input id="newPassword" name="newPassword" type="password" [(ngModel)]="newPassword"
+              autocomplete="new-password" minlength="6" required />
+          </div>
+
+          <div>
+            <label for="confirmPassword">Confirmar nova senha</label>
+            <input id="confirmPassword" name="confirmPassword" type="password" [(ngModel)]="confirmPassword"
+              autocomplete="new-password" minlength="6" required />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" [disabled]="changingPassword">
+            {{ changingPassword ? 'Alterando...' : 'Alterar senha' }}
+          </button>
+        </div>
+
+        <p class="message success" *ngIf="passwordMessage">{{ passwordMessage }}</p>
+        <p class="message error" *ngIf="passwordError">{{ passwordError }}</p>
+      </form>
+
+      <ng-template #passwordUnavailable>
+        <p class="message info">Esta conta usa login externo. Altere a senha diretamente no provedor de acesso.</p>
+      </ng-template>
+    </section>
+
+    <section class="card profile-form-card danger-zone">
+      <div class="danger-header">
+        <div>
+          <span class="danger-eyebrow">Zona de exclusao</span>
+          <h2>Excluir dados</h2>
+        </div>
+      </div>
+
+      <div class="delete-options">
+        <button type="button" class="danger-outline" *ngFor="let option of deleteOptions"
+          (click)="selectDeleteOption(option)" [disabled]="deleting">
+          <strong>{{ option.title }}</strong>
+          <span>{{ option.description }}</span>
+        </button>
+      </div>
+
+      <div class="delete-confirmation" *ngIf="pendingDelete">
+        <h3>{{ pendingDelete.title }}</h3>
+        <p>{{ pendingDelete.description }}</p>
+        <p>Para confirmar, digite <strong>EXCLUIR</strong> no campo abaixo.</p>
+
+        <label for="deleteConfirmation">Confirmacao</label>
+        <input id="deleteConfirmation" name="deleteConfirmation" type="text" [(ngModel)]="deleteConfirmation"
+          autocomplete="off" placeholder="Digite EXCLUIR" />
+
+        <div class="form-actions split-actions">
+          <button type="button" class="secondary" (click)="cancelDelete()" [disabled]="deleting">Cancelar</button>
+          <button type="button" class="danger" (click)="confirmDelete()" [disabled]="!canConfirmDelete || deleting">
+            {{ deleting ? 'Excluindo...' : 'Confirmar exclusao' }}
+          </button>
+        </div>
+      </div>
+
+      <p class="message success" *ngIf="deleteMessage">{{ deleteMessage }}</p>
+      <p class="message error" *ngIf="deleteError">{{ deleteError }}</p>
+    </section>
+  </div>
+</section>

@@ -18,10 +18,10 @@
         </label>
       </div>
 
-      <div class="segmented" aria-label="Filtro de período">
+      <div class="segmented" aria-label="Filtro de periodo">
         <button type="button" class="seg-btn" [class.active]="period === 'day'" (click)="setPeriod('day')">Dia</button>
         <button type="button" class="seg-btn" [class.active]="period === 'month'"
-          (click)="setPeriod('month')">Mês</button>
+          (click)="setPeriod('month')">Mes</button>
         <button type="button" class="seg-btn" [class.active]="period === 'year'"
           (click)="setPeriod('year')">Ano</button>
         <button type="button" class="seg-btn" [class.active]="period === 'total'"
@@ -31,204 +31,189 @@
   </section>
 
   <div class="grid-card main-kpis">
-    <div class="card tile cadastros">
-      <h3>Cadastros</h3>
-      <p class="value">{{ totalCadastros }}</p>
-      <span>{{ filteredTransactionsCount }} movimentações · {{ filteredAssetsCount }} bens</span>
-    </div>
-    <div class="card tile saldo">
-      <h3>Patrimônio total</h3>
-      <p class="value">{{ summary.patrimonioTotal | number:'1.2-2' }}</p>
-      <span>Caixa, investimentos e bens</span>
+    <div class="card tile receita">
+      <h3>Receita</h3>
+      <p class="value">{{ summary.balance | number:'1.2-2' }}</p>
+      <span>Saldo operacional do periodo</span>
     </div>
     <div class="card tile ganho">
-      <h3>Entradas</h3>
+      <h3>Ganhos</h3>
       <p class="value">{{ summary.ganhos | number:'1.2-2' }}</p>
-      <span>Ganhos cadastrados</span>
+      <span>{{ filteredTransactionsCount }} movimentacoes filtradas</span>
     </div>
-    <div class="card tile gasto">
-      <h3>Saídas</h3>
-      <p class="value">{{ summary.gastos | number:'1.2-2' }}</p>
-      <span>Gastos cadastrados</span>
+    <div class="card tile pago">
+      <h3>Pagos</h3>
+      <p class="value">{{ summary.gastosTotal | number:'1.2-2' }}</p>
+      <span>Gastos registrados</span>
     </div>
-    <div class="card tile investimento">
-      <h3>Investimentos</h3>
-      <p class="value">{{ summary.posicaoInvestimentos | number:'1.2-2' }}</p>
-      <span>Aportes, resgates e rendimentos</span>
+    <div class="card tile value-total">
+      <h3>Value</h3>
+      <p class="value">{{ valueTotal | number:'1.2-2' }}</p>
+      <span>Investimentos e bens somados</span>
     </div>
   </div>
 
-  <div class="chart-grid">
-    <div class="card chart-card big-chart">
+  <div class="chart-grid category-charts">
+    <div class="card chart-card">
       <div class="chart-header">
-        <h3>Fluxo de Caixa</h3>
-        <span class="badge">Atual</span>
+        <h3>Ganhos por Categoria</h3>
+        <span class="badge">{{ summary.ganhos | number:'1.2-2' }}</span>
       </div>
-      <div class="metric-list compact">
-        <div><span>Saldo operacional</span><strong>{{ summary.balance | number:'1.2-2' }}</strong></div>
-        <div><span>Gastos sobre ganhos</span><strong>{{ summary.ganhos ? (summary.gastosTotal / summary.ganhos *
-            100 | number:'1.0-0') : 0 }}%</strong></div>
-        <div><span>Saúde do caixa</span><strong>{{ cashFlowHealth }}%</strong></div>
-      </div>
-      <div class="progress-group">
-        <div class="progress-item">
-          <span>Gastos</span>
-          <div class="progress-track">
-            <div class="progress-fill gasto"
-              [style.width.%]="summary.ganhos ? Math.min((summary.gastosTotal / summary.ganhos) * 100, 100) : 0">
-            </div>
-          </div>
-        </div>
-        <div class="revenue-widget">
-          <h4>Total Revenue</h4>
-          <div class="revenue-layout">
-            <div class="revenue-chart">
-              <canvas #mainChartCanvas></canvas>
-            </div>
-            <div class="calendar-panel">
-              <h5>September 2024</h5>
-              <div class="calendar-placeholder">
-                Calendar</div>
-              <div class="calendar-growth">
-                <span>Community growth</span>
-                <strong>65%</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="progress-item">
-          <span>Investimentos</span>
-          <div class="progress-track">
-            <div class="progress-fill investimento"
-              [style.width.%]="summary.ganhos ? Math.min((summary.posicaoInvestimentos / summary.ganhos) * 100 + 5, 100) : 0">
-            </div>
-          </div>
-        </div>
+      <div *ngIf="incomesByCategory.length === 0" class="message-box">Nenhum ganho categorizado.</div>
+      <div class="chart-canvas">
+        <canvas #incomesCanvas></canvas>
       </div>
     </div>
 
-    <div class="card chart-card summary-card">
+    <div class="card chart-card">
       <div class="chart-header">
-        <h3>Composição</h3>
-        <span class="badge">Visão rápida</span>
+        <h3>Gastos por Categoria</h3>
+        <span class="badge">{{ summary.gastosTotal | number:'1.2-2' }}</span>
       </div>
-      <div class="summary-chart">
-        <div class="summary-tile">
-          <strong>{{ summary.ganhos | number:'1.2-2' }}</strong>
-          <span>Ganhos</span>
-        </div>
-        <div class="summary-tile">
-          <strong>{{ summary.gastosTotal | number:'1.2-2' }}</strong>
-          <span>Gastos</span>
-        </div>
-        <div class="summary-tile">
-          <strong>{{ summary.posicaoInvestimentos | number:'1.2-2' }}</strong>
-          <span>Investimentos</span>
+      <div *ngIf="expensesByCategory.length === 0" class="message-box">Nenhum gasto categorizado.</div>
+      <div class="chart-canvas">
+        <canvas #expensesCanvas></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card metrics-card">
+    <div class="chart-header">
+      <h3>Metricas de Investimentos</h3>
+      <span class="badge">{{ investmentsDetails.length }} movimentos</span>
+    </div>
+    <div class="metrics-grid">
+      <div class="summary-tile">
+        <strong>{{ summary.posicaoInvestimentos | number:'1.2-2' }}</strong>
+        <span>Posicao atual</span>
+      </div>
+      <div class="summary-tile">
+        <strong>{{ summary.aportes | number:'1.2-2' }}</strong>
+        <span>Aportes</span>
+      </div>
+      <div class="summary-tile">
+        <strong>{{ summary.resgates | number:'1.2-2' }}</strong>
+        <span>Resgates</span>
+      </div>
+      <div class="summary-tile">
+        <strong>{{ summary.rendimentos | number:'1.2-2' }}</strong>
+        <span>Rendimentos</span>
+      </div>
+      <div class="summary-tile">
+        <strong>{{ investmentReturnRate | number:'1.1-1' }}%</strong>
+        <span>Rendimento sobre aportes</span>
+      </div>
+      <div class="summary-tile">
+        <strong>{{ investmentRescueRate | number:'1.1-1' }}%</strong>
+        <span>Resgatado sobre aportes</span>
+      </div>
+    </div>
+
+    <div class="metric-content-grid">
+      <div>
+        <h4 class="details-title">Investimentos por Classe</h4>
+        <div *ngIf="investmentsByClass.length === 0" class="message-box">Nenhum investimento cadastrado.</div>
+        <div *ngFor="let item of investmentsByClass" class="bar-row">
+          <span>{{ item.label }}</span>
+          <div class="bar-shell">
+            <div class="bar-fill ganho"
+              [style.width.%]="item.value ? Math.min((item.value / (summary.posicaoInvestimentos || 1)) * 100, 100) : 0">
+            </div>
+          </div>
+          <strong>{{ item.value | number:'1.2-2' }}</strong>
         </div>
       </div>
-      <div class="summary-chart secondary">
-        <div class="summary-tile">
-          <strong>{{ summary.aportes | number:'1.2-2' }}</strong>
-          <span>Aportes</span>
-        </div>
-        <div class="summary-tile">
-          <strong>{{ summary.resgates | number:'1.2-2' }}</strong>
-          <span>Resgates</span>
-        </div>
-        <div class="summary-tile">
-          <strong>{{ summary.rendimentos | number:'1.2-2' }}</strong>
-          <span>Rendimentos</span>
+      <div class="chart-canvas">
+        <canvas #investmentsCanvas></canvas>
+      </div>
+    </div>
+
+    <h4 class="details-title">Detalhes dos Investimentos</h4>
+    <div *ngIf="investmentsDetails.length === 0" class="message-box">Nenhum movimento de investimento.</div>
+    <div *ngFor="let inv of investmentsDetails | limitTo: 5" class="list-row responsive-list-row investment-detail-row">
+      <div class="primary">
+        <strong>{{ inv.investmentName }}</strong>
+        <span class="muted">{{ inv.assetClass }} - {{ inv.institution || 'Sem instituicao' }}</span>
+      </div>
+      <div class="list-meta" data-label="Tipo">{{ labelFor(inv.type) }}</div>
+      <div class="list-meta" data-label="Data">{{ inv.date | date:'shortDate' }}</div>
+      <div class="list-amount" data-label="Valor">
+        <span [ngClass]="{ 'status-positive': inv.amount > 0, 'status-negative': inv.amount < 0 }">
+          {{ inv.amount | number:'1.2-2' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card metrics-card">
+    <div class="chart-header">
+      <h3>Metricas dos Bens</h3>
+      <span class="badge">{{ activeAssetsCount }} ativos</span>
+    </div>
+    <div class="metrics-grid">
+      <div class="summary-tile">
+        <strong>{{ summary.patrimonioBens | number:'1.2-2' }}</strong>
+        <span>Valor atual</span>
+      </div>
+      <div class="summary-tile">
+        <strong>{{ assetCostBasis | number:'1.2-2' }}</strong>
+        <span>Custo de aquisicao</span>
+      </div>
+      <div class="summary-tile">
+        <strong>{{ summary.valorizacaoBens | number:'1.2-2' }}</strong>
+        <span>Valorizacao</span>
+      </div>
+      <div class="summary-tile">
+        <strong>{{ assetAppreciationRate | number:'1.1-1' }}%</strong>
+        <span>Valorizacao percentual</span>
+      </div>
+      <div class="summary-tile">
+        <strong>{{ activeAssetsCount }}</strong>
+        <span>Bens ativos</span>
+      </div>
+      <div class="summary-tile">
+        <strong>{{ soldAssetsCount }}</strong>
+        <span>Bens vendidos</span>
+      </div>
+    </div>
+
+    <div class="metric-content-grid">
+      <div>
+        <h4 class="details-title">Bens por Categoria</h4>
+        <div *ngIf="assetsByCategory.length === 0" class="message-box">Nenhum bem cadastrado.</div>
+        <div *ngFor="let item of assetsByCategory" class="bar-row">
+          <span>{{ item.label }}</span>
+          <div class="bar-shell">
+            <div class="bar-fill investimento"
+              [style.width.%]="item.value ? Math.min((item.value / (summary.patrimonioBens || 1)) * 100, 100) : 0">
+            </div>
+          </div>
+          <strong>{{ item.value | number:'1.2-2' }}</strong>
         </div>
       </div>
-      <div class="chart-canvas small">
+      <div class="chart-canvas">
         <canvas #assetsCanvas></canvas>
       </div>
     </div>
   </div>
 
-  <div class="panel-grid stats-grid">
-    <div class="card">
-      <h3>Investimentos por Classe</h3>
-      <div *ngIf="investmentsByClass.length === 0" class="message-box">Nenhum investimento cadastrado.</div>
-      <div *ngFor="let item of investmentsByClass" class="bar-row">
-        <span>{{ item.label }}</span>
-        <div class="bar-shell">
-          <div class="bar-fill ganho"
-            [style.width.%]="item.value ? Math.min((item.value / (summary.posicaoInvestimentos || 1)) * 100, 100) : 0">
-          </div>
-        </div>
-        <strong>{{ item.value | number:'1.2-2' }}</strong>
-      </div>
-      <div class="chart-canvas">
-        <canvas #investmentsCanvas></canvas>
-      </div>
-
-      <h4 class="details-title">Detalhes dos Investimentos</h4>
-      <div *ngIf="investmentsDetails.length === 0" class="message-box">Nenhum movimento de investimento.</div>
-      <div *ngFor="let inv of investmentsDetails" class="list-row">
-        <div class="primary">
-          <strong>{{ inv.investmentName }}</strong>
-          <span class="muted">{{ inv.assetClass }} · {{ inv.institution || '—' }}</span>
-        </div>
-        <div>{{ labelFor(inv.type) }}</div>
-        <div>{{ inv.date | date:'shortDate' }}</div>
-        <div>
-          <span [ngClass]="{ 'status-positive': inv.amount > 0, 'status-negative': inv.amount < 0 }">
-            {{ inv.amount | number:'1.2-2' }}
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>Gastos por Categoria</h3>
-      <div *ngIf="expensesByCategory.length === 0" class="message-box">Nenhum gasto categorizado.</div>
-      <div *ngFor="let item of expensesByCategory" class="bar-row">
-        <span>{{ item.label }}</span>
-        <div class="bar-shell">
-          <div class="bar-fill gasto"
-            [style.width.%]="item.value ? Math.min((item.value / (summary.gastosTotal || 1)) * 100, 100) : 0">
-          </div>
-        </div>
-        <strong>{{ item.value | number:'1.2-2' }}</strong>
-      </div>
-      <div class="chart-canvas small">
-        <canvas #expensesCanvas></canvas>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>Bens por Categoria</h3>
-      <div *ngIf="assetsByCategory.length === 0" class="message-box">Nenhum bem cadastrado.</div>
-      <div *ngFor="let item of assetsByCategory" class="bar-row">
-        <span>{{ item.label }}</span>
-        <div class="bar-shell">
-          <div class="bar-fill investimento"
-            [style.width.%]="item.value ? Math.min((item.value / (summary.patrimonioBens || 1)) * 100, 100) : 0">
-          </div>
-        </div>
-        <strong>{{ item.value | number:'1.2-2' }}</strong>
-      </div>
-    </div>
-  </div>
-
   <div class="card">
-    <h3>Últimas Movimentações</h3>
+    <h3>Ultimas Movimentacoes</h3>
     <div class="list-row header">
-      <div>Descrição</div>
+      <div>Descricao</div>
       <div>Tipo</div>
       <div>Data</div>
       <div>Valor</div>
     </div>
-    <div *ngIf="latest.length === 0" class="message-box">Nenhuma movimentação registrada ainda.</div>
-    <div *ngFor="let t of filteredLatest" class="list-row">
+    <div *ngIf="latest.length === 0" class="message-box">Nenhuma movimentacao registrada ainda.</div>
+    <div *ngFor="let t of filteredLatest | limitTo: 5" class="list-row responsive-list-row movement-row">
       <div class="primary">
         <strong>{{ t.description }}</strong>
         <span class="muted">{{ t.category || t.account || 'Sem categoria' }}</span>
       </div>
-      <div>{{ labelFor(t.type) }}</div>
-      <div>{{ t.date | date:'shortDate' }}</div>
-      <div>
+      <div class="list-meta" data-label="Tipo">{{ labelFor(t.type) }}</div>
+      <div class="list-meta" data-label="Data">{{ t.date | date:'shortDate' }}</div>
+      <div class="list-amount" data-label="Valor">
         <span [ngClass]="{ 'status-positive': t.amount > 0, 'status-negative': t.amount < 0 }">
           {{ t.amount | number:'1.2-2' }}
         </span>
@@ -239,10 +224,10 @@
   <div class="card">
     <h3>Bens Recentes</h3>
     <div *ngIf="assets.length === 0" class="message-box">Nenhum bem registrado ainda.</div>
-    <div *ngFor="let asset of assets" class="asset-row">
+    <div *ngFor="let asset of assets | limitTo: 3" class="asset-row">
       <div>
         <strong>{{ asset.name }}</strong>
-        <span class="muted">{{ asset.category }} · Liquidez {{ asset.liquidity }} · {{ asset.status }}</span>
+        <span class="muted">{{ asset.category }} - Liquidez {{ asset.liquidity }} - {{ asset.status }}</span>
       </div>
       <strong>{{ asset.currentValue | number:'1.2-2' }}</strong>
     </div>
