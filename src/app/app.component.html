@@ -12,7 +12,7 @@
         <a routerLink="/contato" routerLinkActive="active">Contato</a>
       </div>
       <div class="user-menu">
-        <button type="button" class="secondary nav-logout">
+        <button type="button" class="secondary nav-user" routerLink="/perfil" routerLinkActive="active">
           {{ user.displayName || user.email }}
         </button>
         <button type="button" class="secondary theme-toggle" (click)="toggleTheme()">

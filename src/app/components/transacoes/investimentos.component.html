@@ -1,188 +1,162 @@
 <div class="page-section">
-    <section class="page-header">
-        <div>
-            <h1>Investimentos</h1>
-            <p class="section-intro">Registre aportes, resgates e rendimentos com preenchimento assistido e cálculos automáticos.</p>
-        </div>
-    </section>
+  <section class="page-header">
+    <div>
+      <h1>Investimentos</h1>
+      <p class="section-intro">Registre aportes, resgates e rendimentos com preenchimento assistido e cálculos
+        automáticos.</p>
+    </div>
+  </section>
 
-    <div class="summary-strip">
+  <div class="summary-strip">
+    <div>
+      <span>Aportes</span>
+      <strong>{{ totals.aportes | currency:'BRL':'symbol':'1.2-2' }}</strong>
+    </div>
+    <div>
+      <span>Resgates</span>
+      <strong>{{ totals.resgates | currency:'BRL':'symbol':'1.2-2' }}</strong>
+    </div>
+    <div>
+      <span>Rendimentos</span>
+      <strong>{{ totals.rendimentos | currency:'BRL':'symbol':'1.2-2' }}</strong>
+    </div>
+    <div>
+      <span>Posição</span>
+      <strong>{{ totals.posicaoInvestimentos | currency:'BRL':'symbol':'1.2-2' }}</strong>
+    </div>
+  </div>
+
+  <div class="investment-layout">
+    <div class="card movement-card">
+      <div class="card-title-row">
         <div>
-            <span>Aportes</span>
-            <strong>{{ totals.aportes | currency:'BRL':'symbol':'1.2-2' }}</strong>
+          <h2>{{ isEditing ? 'Editar Movimento' : 'Novo Movimento' }}</h2>
+          <p class="muted">Escolha o tipo e preencha o mínimo necessário. O restante acompanha o investimento.</p>
         </div>
-        <div>
-            <span>Resgates</span>
-            <strong>{{ totals.resgates | currency:'BRL':'symbol':'1.2-2' }}</strong>
+        <button type="button" class="secondary compact-button" (click)="resetForm()" *ngIf="isEditing">Novo</button>
+      </div>
+
+      <div class="movement-picker" role="group" aria-label="Tipo de movimento">
+        <button type="button" *ngFor="let option of movementTypes; trackBy: trackByMovementType" class="movement-option"
+          [class.active]="isActiveType(option.value)" (click)="setType(option.value)">
+          <strong>{{ option.label }}</strong>
+          <span>{{ option.hint }}</span>
+        </button>
+      </div>
+
+      <form (ngSubmit)="save()" class="form-grid">
+        <div class="field-group">
+          <label for="date">Data</label>
+          <input type="date" id="date" [(ngModel)]="form.date" name="date" required />
         </div>
-        <div>
-            <span>Rendimentos</span>
-            <strong>{{ totals.rendimentos | currency:'BRL':'symbol':'1.2-2' }}</strong>
+
+        <div class="field-group">
+          <label for="investmentName">Investimento</label>
+          <input type="text" id="investmentName" list="investmentNames" [(ngModel)]="form.investmentName"
+            (ngModelChange)="applyKnownInvestmentData()" name="investmentName" required />
+          <datalist id="investmentNames">
+            <option *ngFor="let name of knownInvestmentNames; trackBy: trackByValue" [value]="name"></option>
+          </datalist>
         </div>
-        <div>
-            <span>Posição</span>
-            <strong>{{ totals.posicaoInvestimentos | currency:'BRL':'symbol':'1.2-2' }}</strong>
+
+        <div class="field-group">
+          <label for="institution">Instituição</label>
+          <input type="text" id="institution" [(ngModel)]="form.institution" name="institution" />
         </div>
+
+        <div class="field-group">
+          <label for="assetClass">Classe</label>
+          <select id="assetClass" [(ngModel)]="form.assetClass" name="assetClass">
+            <option *ngFor="let item of assetClasses; trackBy: trackByValue" [ngValue]="item">{{ item }}</option>
+          </select>
+        </div>
+
+        <ng-container *ngIf="currentType !== 'investment_return'">
+          <div class="field-group">
+            <label for="quantity">Quantidade</label>
+            <input type="number" step="0.000001" id="quantity" [(ngModel)]="form.quantity"
+              (ngModelChange)="syncAmountFromPricing()" name="quantity" />
+          </div>
+
+          <div class="field-group">
+            <label for="unitPrice">Preço unitário</label>
+            <input type="number" step="0.01" id="unitPrice" [(ngModel)]="form.unitPrice"
+              (ngModelChange)="syncAmountFromPricing()" name="unitPrice" />
+          </div>
+
+          <div class="field-group">
+            <label for="brokerFee">Taxas</label>
+            <input type="number" step="0.01" id="brokerFee" [(ngModel)]="form.brokerFee"
+              (ngModelChange)="syncAmountFromPricing()" name="brokerFee" />
+          </div>
+        </ng-container>
+
+        <div class="field-group" *ngIf="currentType === 'investment_return'">
+          <label for="returnPercent">Rendimento %</label>
+          <input type="number" step="0.01" id="returnPercent" [(ngModel)]="returnPercent"
+            (ngModelChange)="syncReturnFromPercent()" name="returnPercent" />
+        </div>
+
+        <div class="field-group">
+          <label for="amount">Valor {{ currentType === 'investment_return' ? 'do rendimento' : 'total' }}</label>
+          <input type="number" step="0.01" id="amount" [(ngModel)]="form.amount" name="amount" required />
+        </div>
+
+        <div class="field-group full-width calculation-box" *ngIf="selectedPosition">
+          <span>Posição atual em {{ selectedPosition.name }}</span>
+          <strong>{{ selectedPosition.currentValue | currency:'BRL':'symbol':'1.2-2' }}</strong>
+          <small>{{ selectedPosition.quantity | number:'1.0-6' }} cotas/unidades | Rendimentos: {{
+            selectedPosition.returns | currency:'BRL':'symbol':'1.2-2' }}</small>
+        </div>
+
+        <div class="field-group full-width">
+          <label for="description">Descrição</label>
+          <input type="text" id="description" [(ngModel)]="form.description" name="description" required />
+        </div>
+
+        <div class="field-group full-width">
+          <label for="notes">Observações</label>
+          <textarea id="notes" [(ngModel)]="form.notes" name="notes"></textarea>
+        </div>
+
+        <div class="field-group full-width actions">
+          <button type="submit" [disabled]="loading">{{ isEditing ? 'Atualizar' : 'Adicionar' }}</button>
+          <button type="button" class="secondary" (click)="resetForm()">Cancelar</button>
+        </div>
+      </form>
     </div>
 
-    <div class="investment-layout">
-        <div class="card movement-card">
-            <div class="card-title-row">
-                <div>
-                    <h2>{{ isEditing ? 'Editar Movimento' : 'Novo Movimento' }}</h2>
-                    <p class="muted">Escolha o tipo e preencha o mínimo necessário. O restante acompanha o investimento.</p>
-                </div>
-                <button type="button" class="secondary compact-button" (click)="resetForm()" *ngIf="isEditing">Novo</button>
-            </div>
-
-            <div class="movement-picker" role="group" aria-label="Tipo de movimento">
-                <button
-                    type="button"
-                    *ngFor="let option of movementTypes; trackBy: trackByMovementType"
-                    class="movement-option"
-                    [class.active]="isActiveType(option.value)"
-                    (click)="setType(option.value)">
-                    <strong>{{ option.label }}</strong>
-                    <span>{{ option.hint }}</span>
-                </button>
-            </div>
-
-            <form (ngSubmit)="save()" class="form-grid">
-                <div class="field-group">
-                    <label for="date">Data</label>
-                    <input type="date" id="date" [(ngModel)]="form.date" name="date" required />
-                </div>
-
-                <div class="field-group">
-                    <label for="investmentName">Investimento</label>
-                    <input
-                        type="text"
-                        id="investmentName"
-                        list="investmentNames"
-                        [(ngModel)]="form.investmentName"
-                        (ngModelChange)="applyKnownInvestmentData()"
-                        name="investmentName"
-                        required />
-                    <datalist id="investmentNames">
-                        <option *ngFor="let name of knownInvestmentNames; trackBy: trackByValue" [value]="name"></option>
-                    </datalist>
-                </div>
-
-                <div class="field-group">
-                    <label for="institution">Instituição</label>
-                    <input type="text" id="institution" [(ngModel)]="form.institution" name="institution" />
-                </div>
-
-                <div class="field-group">
-                    <label for="assetClass">Classe</label>
-                    <select id="assetClass" [(ngModel)]="form.assetClass" name="assetClass">
-                        <option *ngFor="let item of assetClasses; trackBy: trackByValue" [ngValue]="item">{{ item }}</option>
-                    </select>
-                </div>
-
-                <ng-container *ngIf="currentType !== 'investment_return'">
-                    <div class="field-group">
-                        <label for="quantity">Quantidade</label>
-                        <input
-                            type="number"
-                            step="0.000001"
-                            id="quantity"
-                            [(ngModel)]="form.quantity"
-                            (ngModelChange)="syncAmountFromPricing()"
-                            name="quantity" />
-                    </div>
-
-                    <div class="field-group">
-                        <label for="unitPrice">Preço unitário</label>
-                        <input
-                            type="number"
-                            step="0.01"
-                            id="unitPrice"
-                            [(ngModel)]="form.unitPrice"
-                            (ngModelChange)="syncAmountFromPricing()"
-                            name="unitPrice" />
-                    </div>
-
-                    <div class="field-group">
-                        <label for="brokerFee">Taxas</label>
-                        <input
-                            type="number"
-                            step="0.01"
-                            id="brokerFee"
-                            [(ngModel)]="form.brokerFee"
-                            (ngModelChange)="syncAmountFromPricing()"
-                            name="brokerFee" />
-                    </div>
-                </ng-container>
-
-                <div class="field-group" *ngIf="currentType === 'investment_return'">
-                    <label for="returnPercent">Rendimento %</label>
-                    <input
-                        type="number"
-                        step="0.01"
-                        id="returnPercent"
-                        [(ngModel)]="returnPercent"
-                        (ngModelChange)="syncReturnFromPercent()"
-                        name="returnPercent" />
-                </div>
-
-                <div class="field-group">
-                    <label for="amount">Valor {{ currentType === 'investment_return' ? 'do rendimento' : 'total' }}</label>
-                    <input type="number" step="0.01" id="amount" [(ngModel)]="form.amount" name="amount" required />
-                </div>
-
-                <div class="field-group full-width calculation-box" *ngIf="selectedPosition">
-                    <span>Posição atual em {{ selectedPosition.name }}</span>
-                    <strong>{{ selectedPosition.currentValue | currency:'BRL':'symbol':'1.2-2' }}</strong>
-                    <small>{{ selectedPosition.quantity | number:'1.0-6' }} cotas/unidades | Rendimentos: {{ selectedPosition.returns | currency:'BRL':'symbol':'1.2-2' }}</small>
-                </div>
-
-                <div class="field-group full-width">
-                    <label for="description">Descrição</label>
-                    <input type="text" id="description" [(ngModel)]="form.description" name="description" required />
-                </div>
-
-                <div class="field-group full-width">
-                    <label for="notes">Observações</label>
-                    <textarea id="notes" [(ngModel)]="form.notes" name="notes"></textarea>
-                </div>
-
-                <div class="field-group full-width actions">
-                    <button type="submit" [disabled]="loading">{{ isEditing ? 'Atualizar' : 'Adicionar' }}</button>
-                    <button type="button" class="secondary" (click)="resetForm()">Cancelar</button>
-                </div>
-            </form>
-        </div>
-
-        <div class="card positions-card">
-            <h3>Posições</h3>
-            <div *ngIf="positions.length === 0" class="message-box">Nenhuma posição criada ainda.</div>
-            <button type="button" class="position-row" *ngFor="let position of positions; trackBy: trackByPositionName" (click)="selectPosition(position)">
-                <span>
-                    <strong>{{ position.name }}</strong>
-                    <small>{{ position.assetClass }} {{ position.institution ? '| ' + position.institution : '' }}</small>
-                </span>
-                <span class="position-value">{{ position.currentValue | currency:'BRL':'symbol':'1.2-2' }}</span>
-            </button>
-        </div>
+    <div class="card positions-card">
+      <h3>Maiores Posições</h3>
+      <div *ngIf="positions.length === 0" class="message-box">Nenhuma posição criada ainda.</div>
+      <button type="button" class="position-row" *ngFor="let position of positions | limitTo: 10"
+        (click)="selectPosition(position)">
+        <span>
+          <strong>{{ position.name }}</strong>
+          <small>{{ position.assetClass }} {{ position.institution ? '| ' + position.institution : '' }}</small>
+        </span>
+        <span class="position-value">{{ position.currentValue | currency:'BRL':'symbol':'1.2-2' }}</span>
+      </button>
     </div>
+  </div>
 
-    <div class="card">
-        <h3>Movimentos Cadastrados</h3>
-        <div *ngIf="items.length === 0" class="message-box">Nenhum movimento de investimento registrado ainda.</div>
-        <div *ngFor="let item of items; trackBy: trackByItemId" class="list-row">
-            <div class="primary">
-                <strong>{{ item.investmentName }}</strong>
-                <span class="muted">{{ typeLabel(item.type) }} | {{ item.assetClass || 'Sem classe' }} | {{ item.date | date:'shortDate' }}</span>
-                <span class="muted">{{ item.description }}</span>
-            </div>
-            <div [ngClass]="item.type === 'investment_out' ? 'status-negative' : 'status-positive'">
-                {{ item.amount | currency:'BRL':'symbol':'1.2-2' }}
-            </div>
-            <div class="actions-row">
-                <button type="button" class="secondary" (click)="edit(item)">Editar</button>
-                <button type="button" class="danger" (click)="remove(item.id)">Excluir</button>
-            </div>
-        </div>
+  <div class="card">
+    <h3>Movimentos Cadastrados</h3>
+    <div *ngIf="items.length === 0" class="message-box">Nenhum movimento de investimento registrado ainda.</div>
+    <div *ngFor="let item of items; trackBy: trackByItemId" class="list-row">
+      <div class="primary">
+        <strong>{{ item.investmentName }}</strong>
+        <span class="muted">{{ typeLabel(item.type) }} | {{ item.assetClass || 'Sem classe' }} | {{ item.date |
+          date:'shortDate' }}</span>
+        <span class="muted">{{ item.description }}</span>
+      </div>
+      <div [ngClass]="item.type === 'investment_out' ? 'status-negative' : 'status-positive'">
+        {{ item.amount | currency:'BRL':'symbol':'1.2-2' }}
+      </div>
+      <div class="actions-row">
+        <button type="button" class="secondary" (click)="edit(item)">Editar</button>
+        <button type="button" class="danger" (click)="remove(item.id)">Excluir</button>
+      </div>
     </div>
+  </div>
 </div>
