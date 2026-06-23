@@ -100,12 +100,6 @@ button.danger {
     border-radius: 8px;
 }
 
-gap: 1rem;
-align-items: center;
-padding: 1rem 0;
-border-bottom: 1px solid var(--border);
-}
-
 .list-row:last-child {
     border-bottom: none;
 }

@@ -75,10 +75,6 @@ textarea:focus {
     transition: all 0.3s ease;
 }
 
-gap: 1rem;
-margin-top: 1rem;
-}
-
 .mensagem-sucesso,
 .message-box {
     background: var(--accent-soft);
