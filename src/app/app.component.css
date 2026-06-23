@@ -24,7 +24,8 @@ footer {
     min-width: 0;
 }
 
-.user-menu span {
+.user-menu span,
+.nav-user {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -36,6 +37,16 @@ footer {
     flex-shrink: 0;
 }
 
+.nav-user {
+    padding: 0.55rem 0.9rem;
+}
+
+.nav-user.active {
+    background: var(--surface-3);
+    box-shadow: inset 0 0 0 1px var(--accent);
+    color: var(--accent-strong);
+}
+
 @media (max-width: 760px) {
     .user-menu {
         justify-content: space-between;
@@ -43,7 +54,8 @@ footer {
         width: 100%;
     }
 
-    .user-menu span {
+    .user-menu span,
+    .nav-user {
         max-width: calc(100vw - 7rem);
     }
 }

@@ -1,13 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import {
+    EmailAuthProvider,
     GoogleAuthProvider,
     User,
     createUserWithEmailAndPassword,
     onAuthStateChanged,
+    reauthenticateWithCredential,
     signInWithEmailAndPassword,
     signInWithPopup,
     signOut,
+    updatePassword,
     updateProfile,
 } from 'firebase/auth';
 import { BehaviorSubject } from 'rxjs';
@@ -47,6 +50,27 @@ export class AuthService {
 
     async loginWithGoogle() {
         return signInWithPopup(firebaseAuth, new GoogleAuthProvider());
+    }
+
+    async updateDisplayName(displayName: string) {
+        const user = firebaseAuth.currentUser;
+        if (!user) {
+            throw new Error('Nenhum usuario autenticado.');
+        }
+
+        await updateProfile(user, { displayName: displayName.trim() });
+        this.userSubject.next(firebaseAuth.currentUser);
+    }
+
+    async updatePassword(currentPassword: string, newPassword: string) {
+        const user = firebaseAuth.currentUser;
+        if (!user?.email) {
+            throw new Error('Nenhum usuario com e-mail autenticado.');
+        }
+
+        const credential = EmailAuthProvider.credential(user.email, currentPassword);
+        await reauthenticateWithCredential(user, credential);
+        await updatePassword(user, newPassword);
     }
 
     async logout() {

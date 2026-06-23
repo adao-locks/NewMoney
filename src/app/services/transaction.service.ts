@@ -13,7 +13,7 @@ import {
   orderBy,
   query,
   updateDoc,
-  where,
+  writeBatch,
 } from 'firebase/firestore';
 import { AuthService } from './auth.service';
 import { firebaseDb } from '../firebase';
@@ -46,6 +46,8 @@ export const emptySummary = (): FinancialSummary => ({
   valorizacaoBens: 0,
   patrimonioTotal: 0,
 });
+
+export type DataDeleteKind = 'incomes' | 'expenses' | 'investments' | 'assets' | 'all';
 
 @Injectable({ providedIn: 'root' })
 export class TransactionService {
@@ -156,6 +158,70 @@ export class TransactionService {
   async removeAsset(id: string) {
     const assetDoc = await this.userDoc('assets', id);
     await deleteDoc(assetDoc);
+  }
+
+  async deleteUserData(kind: DataDeleteKind) {
+    if (kind === 'assets') {
+      return this.deleteAssets();
+    }
+
+    if (kind === 'all') {
+      const [transactionsCount, assetsCount] = await Promise.all([
+        this.deleteTransactionsByKind('all'),
+        this.deleteAssets(),
+      ]);
+      return transactionsCount + assetsCount;
+    }
+
+    return this.deleteTransactionsByKind(kind);
+  }
+
+  private async deleteTransactionsByKind(kind: Exclude<DataDeleteKind, 'assets'>) {
+    const transactions = await this.userCollection('transactions');
+    const snapshot = await getDocs(query(transactions));
+    const docs = kind === 'all'
+      ? snapshot.docs
+      : snapshot.docs.filter((item) => this.shouldDeleteTransaction(item, kind));
+
+    await this.deleteSnapshotsInBatches(docs);
+    return docs.length;
+  }
+
+  private async deleteAssets() {
+    const assets = await this.userCollection('assets');
+    const snapshot = await getDocs(query(assets));
+
+    await this.deleteSnapshotsInBatches(snapshot.docs);
+    return snapshot.size;
+  }
+
+  private shouldDeleteTransaction(
+    snapshot: QueryDocumentSnapshot<DocumentData>,
+    kind: Exclude<DataDeleteKind, 'assets' | 'all'>,
+  ) {
+    const data = snapshot.data() as Partial<Transaction>;
+    const type = data.type ?? (Number(data.amount ?? 0) >= 0 ? 'income' : 'expense');
+    return this.transactionTypesForDelete(kind).includes(type);
+  }
+
+  private transactionTypesForDelete(kind: Exclude<DataDeleteKind, 'assets' | 'all'>) {
+    if (kind === 'incomes') {
+      return ['income'];
+    }
+
+    if (kind === 'expenses') {
+      return ['expense'];
+    }
+
+    return ['investment_in', 'investment_out', 'investment_return'];
+  }
+
+  private async deleteSnapshotsInBatches(snapshots: QueryDocumentSnapshot<DocumentData>[]) {
+    for (let index = 0; index < snapshots.length; index += 500) {
+      const batch = writeBatch(firebaseDb);
+      snapshots.slice(index, index + 500).forEach((snapshot) => batch.delete(snapshot.ref));
+      await batch.commit();
+    }
   }
 
   async getSummary() {

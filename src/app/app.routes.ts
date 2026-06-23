@@ -9,6 +9,7 @@ import { TransacoesInvestimentosComponent } from './components/transacoes/invest
 import { TransacoesBensComponent } from './components/transacoes/bens.component';
 import { MovimentacoesComponent } from './components/transacoes/movimentacoes.component';
 import { LoginComponent } from './components/login/login.component';
+import { PerfilComponent } from './components/perfil/perfil.component';
 import { authChildGuard, authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -36,6 +37,11 @@ export const routes: Routes = [
                 path: 'contato',
                 component: ContatoComponent,
                 data: { title: 'NewMoney - Contato' },
+            },
+            {
+                path: 'perfil',
+                component: PerfilComponent,
+                data: { title: 'NewMoney - Perfil' },
             },
             {
                 path: 'dashboard',
