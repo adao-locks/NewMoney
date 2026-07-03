@@ -17,7 +17,7 @@ import {
 } from 'firebase/firestore';
 import { AuthService } from './auth.service';
 import { firebaseDb } from '../firebase';
-import { InvestmentMovement, PersonalAsset, Transaction } from '../models/transaction.model';
+import { Institution, InvestmentMovement, PersonalAsset, Transaction } from '../models/transaction.model';
 
 export interface FinancialSummary {
   ganhos: number;
@@ -61,12 +61,12 @@ export class TransactionService {
     return user;
   }
 
-  private async userCollection(name: 'transactions' | 'assets') {
+  private async userCollection(name: 'transactions' | 'assets' | 'institutions') {
     const user = await this.requireUser();
     return collection(firebaseDb, 'users', user.uid, name) as CollectionReference<DocumentData>;
   }
 
-  private async userDoc(name: 'transactions' | 'assets', id: string) {
+  private async userDoc(name: 'transactions' | 'assets' | 'institutions', id: string) {
     const user = await this.requireUser();
     return doc(firebaseDb, 'users', user.uid, name, id);
   }
@@ -89,6 +89,13 @@ export class TransactionService {
   private assetFromDoc(snapshot: QueryDocumentSnapshot<DocumentData>): PersonalAsset {
     return {
       ...(snapshot.data() as Omit<PersonalAsset, 'id'>),
+      id: snapshot.id,
+    };
+  }
+
+  private institutionFromDoc(snapshot: QueryDocumentSnapshot<DocumentData>): Institution {
+    return {
+      ...(snapshot.data() as Omit<Institution, 'id'>),
       id: snapshot.id,
     };
   }
@@ -158,6 +165,24 @@ export class TransactionService {
   async removeAsset(id: string) {
     const assetDoc = await this.userDoc('assets', id);
     await deleteDoc(assetDoc);
+  }
+
+  async getInstitutions(): Promise<Institution[]> {
+    const institutions = await this.userCollection('institutions');
+    const snapshot = await getDocs(query(institutions, orderBy('name', 'asc')));
+    return snapshot.docs.map((item) => this.institutionFromDoc(item));
+  }
+
+  async addInstitution(name: string) {
+    const payload: Omit<Institution, 'id'> = { name: name.trim() };
+    const institutions = await this.userCollection('institutions');
+    const reference = await addDoc(institutions, payload);
+    return { ...payload, id: reference.id };
+  }
+
+  async removeInstitution(id: string) {
+    const institutionDoc = await this.userDoc('institutions', id);
+    await deleteDoc(institutionDoc);
   }
 
   async deleteUserData(kind: DataDeleteKind) {

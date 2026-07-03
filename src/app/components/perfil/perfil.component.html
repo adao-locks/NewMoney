@@ -103,6 +103,33 @@
       </ng-template>
     </section>
 
+    <section class="card profile-form-card ">
+      <h2>Minhas Instituições</h2>
+      <div class="institutions-list">
+        <div *ngFor="let institution of institutions" class="card institution-item">
+          <span>{{ institution.name }}</span>
+          <button type="button" class="remove-btn" (click)="removeInstitution(institution)" [disabled]="removing">
+            {{ removing ? 'Removendo...' : 'Remover' }}
+          </button>
+        </div>
+        <div *ngIf="institutions.length === 0" class="no-institutions">
+          <p>Nenhuma instituição vinculada.</p>
+        </div>
+      </div>
+      <form class="profile-form" (ngSubmit)="addInstitution()">
+        <label for="newInstitution">Adicionar nova instituição</label>
+        <input id="newInstitution" name="newInstitution" type="text" [(ngModel)]="newInstitution" maxlength="100"
+          placeholder="Nome da instituição" required />
+        <div class="form-actions">
+          <button type="submit" [disabled]="adding">
+            {{ adding ? 'Adicionando...' : 'Adicionar instituição' }}
+          </button>
+        </div>
+        <p class="message success" *ngIf="institutionMessage">{{ institutionMessage }}</p>
+        <p class="message error" *ngIf="institutionError">{{ institutionError }}</p>
+      </form>
+    </section>
+
     <section class="card profile-form-card danger-zone">
       <div class="danger-header">
         <div>
