@@ -12,6 +12,7 @@ import {
   getDocs,
   orderBy,
   query,
+  setDoc,
   updateDoc,
   writeBatch,
 } from 'firebase/firestore';
@@ -51,6 +52,8 @@ export type DataDeleteKind = 'incomes' | 'expenses' | 'investments' | 'assets' |
 
 @Injectable({ providedIn: 'root' })
 export class TransactionService {
+  private syncingRecurringSubscriptions?: Promise<void>;
+
   constructor(private auth: AuthService) { }
 
   private async requireUser() {
@@ -69,6 +72,11 @@ export class TransactionService {
   private async userDoc(name: 'transactions' | 'assets' | 'institutions', id: string) {
     const user = await this.requireUser();
     return doc(firebaseDb, 'users', user.uid, name, id);
+  }
+
+  private async userSettingsDoc(id: 'budget') {
+    const user = await this.requireUser();
+    return doc(firebaseDb, 'users', user.uid, 'settings', id);
   }
 
   private clean<T extends Record<string, unknown>>(data: T) {
@@ -101,9 +109,23 @@ export class TransactionService {
   }
 
   async getAll(): Promise<Transaction[]> {
+    await this.syncRecurringSubscriptions();
     const transactions = await this.userCollection('transactions');
     const snapshot = await getDocs(query(transactions, orderBy('date', 'desc')));
     return snapshot.docs.map((item) => this.transactionFromDoc(item));
+  }
+
+  async syncRecurringSubscriptions() {
+    if (this.syncingRecurringSubscriptions) {
+      return this.syncingRecurringSubscriptions;
+    }
+
+    this.syncingRecurringSubscriptions = this.createMissingSubscriptionExpenses()
+      .finally(() => {
+        this.syncingRecurringSubscriptions = undefined;
+      });
+
+    return this.syncingRecurringSubscriptions;
   }
 
   async getById(id: string) {
@@ -123,6 +145,123 @@ export class TransactionService {
     const transactions = await this.userCollection('transactions');
     const reference = await addDoc(transactions, payload);
     return { ...payload, id: reference.id } as Transaction;
+  }
+
+  async addMany(items: Array<Omit<Transaction, 'id'>>) {
+    const transactions = await this.userCollection('transactions');
+    const batch = writeBatch(firebaseDb);
+    const savedItems = items.map((tx) => {
+      const reference = doc(transactions);
+      const payload = this.clean({
+        ...tx,
+        type: tx.type ?? (tx.amount >= 0 ? 'income' : 'expense'),
+      });
+
+      batch.set(reference, payload);
+      return { ...payload, id: reference.id } as Transaction;
+    });
+
+    await batch.commit();
+    return savedItems;
+  }
+
+  private async createMissingSubscriptionExpenses() {
+    const transactions = await this.userCollection('transactions');
+    const snapshot = await getDocs(query(transactions));
+    const items = snapshot.docs.map((item) => this.transactionFromDoc(item));
+    const subscriptionTemplates = items.filter((item) => this.isSubscriptionTemplate(item));
+    const pendingExpenses = subscriptionTemplates.flatMap((subscription) =>
+      this.buildPendingSubscriptionExpenses(subscription, items)
+    );
+
+    for (let index = 0; index < pendingExpenses.length; index += 500) {
+      const batch = writeBatch(firebaseDb);
+      pendingExpenses.slice(index, index + 500).forEach((expense) => {
+        const reference = doc(transactions);
+        batch.set(reference, this.clean(expense));
+      });
+      await batch.commit();
+    }
+  }
+
+  private isSubscriptionTemplate(item: Transaction) {
+    return (item.type ?? 'expense') === 'expense'
+      && item.recurrence?.kind === 'subscription'
+      && item.recurrence.status === 'active'
+      && !item.recurrence.generatedFrom;
+  }
+
+  private buildPendingSubscriptionExpenses(
+    subscription: Transaction,
+    existingItems: Transaction[],
+  ): Array<Omit<Transaction, 'id'>> {
+    const startDate = subscription.recurrence?.startsAt ?? subscription.date;
+    const monthCount = this.monthsBetween(startDate, this.todayAsDateInputValue());
+    const generatedKeys = new Set(
+      existingItems
+        .filter((item) => item.recurrence?.generatedFrom === subscription.id)
+        .map((item) => this.subscriptionOccurrenceKey(item.date))
+    );
+
+    const pendingExpenses: Array<Omit<Transaction, 'id'>> = [];
+
+    Array.from({ length: monthCount }, (_, index) => {
+      const date = this.addMonths(startDate, index + 1);
+      const occurrenceKey = this.subscriptionOccurrenceKey(date);
+
+      if (generatedKeys.has(occurrenceKey)) {
+        return;
+      }
+
+      pendingExpenses.push({
+        date,
+        description: subscription.description,
+        amount: -Math.abs(subscription.amount),
+        type: 'expense' as const,
+        category: subscription.category,
+        account: subscription.account,
+        notes: subscription.notes,
+        recurrence: {
+          ...subscription.recurrence!,
+          seriesId: subscription.recurrence?.seriesId ?? subscription.id,
+          generatedFrom: subscription.id,
+        },
+      });
+    });
+
+    return pendingExpenses;
+  }
+
+  private monthsBetween(startDateValue: string, endDateValue: string) {
+    const [startYear, startMonth] = startDateValue.split('-').map(Number);
+    const [endYear, endMonth] = endDateValue.split('-').map(Number);
+    return Math.max(0, (endYear - startYear) * 12 + (endMonth - startMonth));
+  }
+
+  private addMonths(dateValue: string, months: number) {
+    const [year, month, day] = dateValue.split('-').map(Number);
+    const target = new Date(year, month - 1 + months, 1);
+    const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+    target.setDate(Math.min(day, lastDay));
+
+    const targetYear = target.getFullYear();
+    const targetMonth = String(target.getMonth() + 1).padStart(2, '0');
+    const targetDay = String(target.getDate()).padStart(2, '0');
+
+    return `${targetYear}-${targetMonth}-${targetDay}`;
+  }
+
+  private subscriptionOccurrenceKey(dateValue: string) {
+    return dateValue.substring(0, 7);
+  }
+
+  private todayAsDateInputValue() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
   }
 
   async update(id: string, tx: Omit<Transaction, 'id'>) {
@@ -183,6 +322,25 @@ export class TransactionService {
   async removeInstitution(id: string) {
     const institutionDoc = await this.userDoc('institutions', id);
     await deleteDoc(institutionDoc);
+  }
+
+  async getBudget() {
+    const budgetDoc = await this.userSettingsDoc('budget');
+    const snapshot = await getDoc(budgetDoc);
+
+    if (!snapshot.exists()) {
+      return 0;
+    }
+
+    const data = snapshot.data() as { amount?: unknown };
+    return Number(data.amount ?? 0);
+  }
+
+  async saveBudget(amount: number) {
+    const budgetDoc = await this.userSettingsDoc('budget');
+    const value = Math.max(0, Number(amount || 0));
+    await setDoc(budgetDoc, { amount: value, updatedAt: new Date().toISOString() }, { merge: true });
+    return value;
   }
 
   async deleteUserData(kind: DataDeleteKind) {

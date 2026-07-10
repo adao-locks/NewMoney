@@ -1,60 +1,74 @@
 <div class="page-section">
-    <section class="page-header">
-        <div>
-            <h1>Gastos</h1>
-            <p class="section-intro">Registre seus gastos e acompanhe a evolução das saídas financeiras.</p>
-        </div>
-    </section>
-
-    <div class="card">
-        <h2>{{ isEditing ? 'Editar Gasto' : 'Adicionar Gasto' }}</h2>
-        <form (ngSubmit)="save()" class="form-grid">
-            <div class="field-group">
-                <label for="date">Data</label>
-                <input type="date" id="date" [(ngModel)]="form.date" name="date" required />
-            </div>
-            <div class="field-group">
-                <label for="description">Descrição</label>
-                <input type="text" id="description" [(ngModel)]="form.description" name="description" required />
-            </div>
-            <div class="field-group">
-                <label for="category">Categoria</label>
-                <select id="category" [(ngModel)]="form.category" name="category">
-                    <option *ngFor="let item of categories" [ngValue]="item">{{ item }}</option>
-                </select>
-            </div>
-            <div class="field-group">
-                <label for="account">Conta</label>
-                <input type="text" id="account" [(ngModel)]="form.account" name="account" />
-            </div>
-            <div class="field-group">
-                <label for="amount">Valor</label>
-                <input type="number" step="0.01" id="amount" [(ngModel)]="form.amount" name="amount" required />
-            </div>
-            <div class="field-group full-width">
-                <label for="notes">Observações</label>
-                <textarea id="notes" [(ngModel)]="form.notes" name="notes"></textarea>
-            </div>
-            <div class="field-group full-width actions">
-                <button type="submit">{{ isEditing ? 'Atualizar' : 'Adicionar' }}</button>
-                <button type="button" class="secondary" (click)="resetForm()">Cancelar</button>
-            </div>
-        </form>
+  <section class="page-header">
+    <div>
+      <h1>Gastos</h1>
+      <p class="section-intro">Registre seus gastos e acompanhe a evolução das saídas financeiras.</p>
     </div>
+  </section>
 
-    <div class="card">
-        <h3>Gastos Cadastrados</h3>
-        <div *ngIf="items.length === 0" class="message-box">Nenhum gasto registrado ainda.</div>
-        <div *ngFor="let item of items" class="list-row">
-            <div class="primary">
-                <strong>{{ item.description }}</strong>
-                <span class="muted">{{ item.category || 'Sem categoria' }} · {{ item.date | date:'shortDate' }}</span>
-            </div>
-            <div class="status-negative">{{ item.amount | number:'1.2-2' }}</div>
-            <div class="actions-row">
-                <button type="button" class="secondary" (click)="edit(item)">Editar</button>
-                <button type="button" class="danger" (click)="remove(item.id)">Excluir</button>
-            </div>
-        </div>
+  <div class="card">
+    <h2>{{ isEditing ? 'Editar Gasto' : 'Adicionar Gasto' }}</h2>
+    <form (ngSubmit)="save()" class="form-grid">
+      <div class="field-group">
+        <label for="date">Data</label>
+        <input type="date" id="date" [(ngModel)]="form.date" name="date" required />
+      </div>
+      <div class="field-group">
+        <label for="description">Descrição</label>
+        <input type="text" id="description" [(ngModel)]="form.description" name="description" required />
+      </div>
+      <div class="field-group">
+        <label for="category">Categoria</label>
+        <select id="category" [(ngModel)]="form.category" name="category">
+          <option *ngFor="let item of categories" [ngValue]="item">{{ item }}</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label for="account">Conta</label>
+        <input type="text" id="account" [(ngModel)]="form.account" name="account" />
+      </div>
+      <div class="field-group">
+        <label for="amount">Valor</label>
+        <input type="number" step="0.01" id="amount" [(ngModel)]="form.amount" name="amount" required />
+      </div>
+      <div class="field-group">
+        <label for="recurrenceMode">Tipo de cadastro</label>
+        <select id="recurrenceMode" [(ngModel)]="form.recurrenceMode" name="recurrenceMode" [disabled]="isEditing">
+          <option value="single">Gasto único</option>
+          <option value="subscription">Assinatura recorrente</option>
+          <option value="installment">Parcelado</option>
+        </select>
+      </div>
+      <div class="field-group" *ngIf="form.recurrenceMode === 'installment'">
+        <label for="installments">Parcelas</label>
+        <input type="number" min="2" step="1" id="installments" [(ngModel)]="form.installments" name="installments"
+          [disabled]="isEditing" />
+      </div>
+      <div class="field-group full-width">
+        <label for="notes">Observações</label>
+        <textarea id="notes" [(ngModel)]="form.notes" name="notes"></textarea>
+      </div>
+      <div class="field-group full-width actions">
+        <button type="submit">{{ isEditing ? 'Atualizar' : 'Adicionar' }}</button>
+        <button type="button" class="secondary" (click)="resetForm()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Gastos Cadastrados</h3>
+    <div *ngIf="items.length === 0" class="message-box">Nenhum gasto registrado ainda.</div>
+    <div *ngFor="let item of items" class="list-row">
+      <div class="primary">
+        <strong>{{ item.description }}</strong>
+        <span *ngIf="getRecurrenceLabel(item)" class="recurrence-badge">{{ getRecurrenceLabel(item) }}</span>
+        <span class="muted">{{ item.category || 'Sem categoria' }} · {{ item.date | date:'shortDate' }}</span>
+      </div>
+      <div class="status-negative">{{ item.amount | number:'1.2-2' }}</div>
+      <div class="actions-row">
+        <button type="button" class="secondary" (click)="edit(item)">Editar</button>
+        <button type="button" class="danger" (click)="remove(item.id)">Excluir</button>
+      </div>
     </div>
+  </div>
 </div>

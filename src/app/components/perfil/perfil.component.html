@@ -130,6 +130,29 @@
       </form>
     </section>
 
+    <section class="card profile-form-card budget">
+      <h2>Orcamento</h2>
+      <p class="budget-current" *ngIf="!loadingBudget">
+        Orcamento atual: <strong>{{ budget | number:'1.2-2' }}</strong>
+      </p>
+      <p class="message info" *ngIf="loadingBudget">Carregando orcamento...</p>
+
+      <form class="profile-form" (ngSubmit)="saveBudget()">
+        <label for="budget">Valor do orcamento</label>
+        <input id="budget" name="budget" type="number" [(ngModel)]="budget" placeholder="0.00" min="0" step="0.01"
+          required [disabled]="loadingBudget || savingBudget" />
+
+        <div class="form-actions">
+          <button type="submit" [disabled]="loadingBudget || savingBudget">
+            {{ savingBudget ? 'Salvando...' : 'Salvar orcamento' }}
+          </button>
+        </div>
+
+        <p class="message success" *ngIf="budgetMessage">{{ budgetMessage }}</p>
+        <p class="message error" *ngIf="budgetError">{{ budgetError }}</p>
+      </form>
+    </section>
+
     <section class="card profile-form-card danger-zone">
       <div class="danger-header">
         <div>

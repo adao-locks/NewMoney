@@ -114,6 +114,19 @@
   color: var(--text-muted);
 }
 
+.budget-current {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-muted);
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+}
+
+.budget-current strong {
+  color: var(--accent-strong);
+}
+
 .danger-zone {
   border-color: rgba(239, 68, 68, 0.28);
 }

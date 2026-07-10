@@ -79,6 +79,11 @@ export class PerfilComponent {
   deleteError = '';
   deleting = false;
   private loadedUid = '';
+  budget = 0;
+  loadingBudget = false;
+  savingBudget = false;
+  budgetMessage = '';
+  budgetError = '';
 
   constructor(
     public auth: AuthService,
@@ -93,6 +98,7 @@ export class PerfilComponent {
     this.loadedUid = user.uid;
     this.displayName = user.displayName ?? '';
     this.loadInstitutions();
+    this.loadBudget();
   }
 
   providerLabel(user: User) {
@@ -292,6 +298,44 @@ export class PerfilComponent {
       console.error(error);
     } finally {
       this.removing = false;
+    }
+  }
+
+  async loadBudget() {
+    this.budgetMessage = '';
+    this.budgetError = '';
+    this.loadingBudget = true;
+
+    try {
+      this.budget = await this.transactionService.getBudget();
+    } catch (error) {
+      this.budgetError = 'Nao foi possivel carregar o orcamento.';
+      console.error(error);
+    } finally {
+      this.loadingBudget = false;
+    }
+  }
+
+  async saveBudget() {
+    this.budgetMessage = '';
+    this.budgetError = '';
+
+    const value = Number(this.budget);
+    if (!Number.isFinite(value) || value < 0) {
+      this.budgetError = 'Informe um valor de orcamento valido.';
+      return;
+    }
+
+    this.savingBudget = true;
+
+    try {
+      this.budget = await this.transactionService.saveBudget(value);
+      this.budgetMessage = 'Orcamento salvo com sucesso.';
+    } catch (error) {
+      this.budgetError = 'Nao foi possivel salvar o orcamento agora.';
+      console.error(error);
+    } finally {
+      this.savingBudget = false;
     }
   }
 }

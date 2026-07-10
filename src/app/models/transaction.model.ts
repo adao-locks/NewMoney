@@ -1,4 +1,17 @@
 export type TransactionType = 'income' | 'expense' | 'investment_in' | 'investment_out' | 'investment_return';
+export type ExpenseRecurrenceKind = 'subscription' | 'installment';
+
+export interface TransactionRecurrence {
+  kind: ExpenseRecurrenceKind;
+  frequency: 'monthly';
+  status: 'active' | 'completed';
+  startsAt: string;
+  endsAt?: string;
+  seriesId?: string;
+  generatedFrom?: string;
+  installmentNumber?: number;
+  installmentTotal?: number;
+}
 
 export interface Transaction {
   id: string;
@@ -9,6 +22,7 @@ export interface Transaction {
   category?: string;
   account?: string;
   notes?: string;
+  recurrence?: TransactionRecurrence;
 }
 
 export interface InvestmentMovement extends Transaction {

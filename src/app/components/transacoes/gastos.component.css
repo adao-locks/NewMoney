@@ -47,6 +47,18 @@
     font-size: 0.95rem;
 }
 
+.recurrence-badge {
+    display: inline-flex;
+    width: fit-content;
+    margin-top: 0.35rem;
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(14, 165, 233, 0.12);
+    color: #0284c7;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
 .status-negative {
     color: #f97316;
     font-weight: 700;
@@ -98,12 +110,6 @@ button.danger {
     background: var(--surface-2);
     padding-left: 0.5rem;
     border-radius: 8px;
-}
-
-gap: 1rem;
-align-items: center;
-padding: 1rem 0;
-border-bottom: 1px solid var(--border);
 }
 
 .list-row:last-child {
