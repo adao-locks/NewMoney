@@ -50,6 +50,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   loading = false;
   readonly Math = Math;
   errorMessage = '';
+  budget = 0;
   period: 'day' | 'month' | 'year' | 'total' = 'month';
   selectedDate = new Date().toISOString().substring(0, 10);
   selectedMonth = new Date().toISOString().substring(0, 7);
@@ -76,15 +77,17 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.errorMessage = '';
 
     try {
-      const [allItems, assets, investmentMoves] = await Promise.all([
+      const [allItems, assets, investmentMoves, budget] = await Promise.all([
         this.service.getAll(),
         this.service.getAssets(),
         this.service.getInvestmentMovements(),
+        this.service.getBudget(),
       ]);
 
       this.allItems = allItems;
       this.allAssets = assets;
       this.allInvestmentMoves = investmentMoves;
+      this.budget = budget;
       this.applyDashboardFilter();
     } catch {
       this.errorMessage = 'Nao foi possivel carregar o dashboard.';
@@ -127,6 +130,42 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   get valueTotal() {
     return this.summary.posicaoInvestimentos + this.summary.patrimonioBens;
+  }
+
+  get hasBudget() {
+    return this.budget > 0;
+  }
+
+  get paidBudgetUsage() {
+    if (!this.hasBudget) {
+      return 0;
+    }
+
+    return (this.summary.gastosTotal / this.budget) * 100;
+  }
+
+  get isBudgetExceeded() {
+    return this.hasBudget && this.summary.gastosTotal > this.budget;
+  }
+
+  get isBudgetNearLimit() {
+    return this.hasBudget && !this.isBudgetExceeded && this.paidBudgetUsage >= 90;
+  }
+
+  get paidBudgetMessage() {
+    if (this.isBudgetExceeded) {
+      return `Orcamento ultrapassado em ${(this.summary.gastosTotal - this.budget).toFixed(2)}`;
+    }
+
+    if (this.isBudgetNearLimit) {
+      return `Perto do orcamento: ${this.paidBudgetUsage.toFixed(0)}% usado`;
+    }
+
+    if (this.hasBudget) {
+      return `Orcamento: ${this.budget.toFixed(2)}`;
+    }
+
+    return 'Gastos registrados';
   }
 
   get investmentReturnRate() {

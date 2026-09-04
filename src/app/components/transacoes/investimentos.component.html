@@ -61,7 +61,11 @@
 
         <div class="field-group">
           <label for="institution">Instituição</label>
-          <input type="text" id="institution" [(ngModel)]="form.institution" name="institution" />
+          <select id="institution" [(ngModel)]="form.institution" name="institution">
+            <option value="">Selecione</option>
+            <option *ngFor="let item of assetInstitutions; trackBy: trackByValue" [ngValue]="item">{{ item }}</option>
+          </select>
+          <!-- <input type="text" id="institution" [(ngModel)]="form.institution" name="institution" /> -->
         </div>
 
         <div class="field-group">

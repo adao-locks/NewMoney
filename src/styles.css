@@ -35,6 +35,10 @@ body {
   color: var(--text);
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 body.theme-dark {
   color-scheme: dark;
   background-color: #07190f;

@@ -47,6 +47,8 @@ export class TransacoesInvestimentosComponent implements OnInit {
 
   assetClasses = ['Renda fixa', 'CDI', 'Tesouro', 'Ações', 'Fundos', 'FIIs', 'Cripto', 'Previdência', 'Exterior', 'Outros'];
 
+  assetInstitutions: string[] = [];
+
   constructor(private service: TransactionService) { }
 
   ngOnInit() {
@@ -66,10 +68,14 @@ export class TransacoesInvestimentosComponent implements OnInit {
     this.errorMessage = '';
 
     try {
-      [this.items, this.totals] = await Promise.all([
+      const [items, totals, institutions] = await Promise.all([
         this.service.getInvestmentMovements(),
         this.service.getSummary(),
+        this.service.getInstitutions(),
       ]);
+      this.items = items;
+      this.totals = totals;
+      this.assetInstitutions = institutions.map((institution) => institution.name);
       this.refreshDerivedData();
     } catch {
       this.errorMessage = 'Nao foi possivel carregar os investimentos.';

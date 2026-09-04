@@ -33,7 +33,7 @@
   <div class="grid-card main-kpis">
     <div class="card tile receita">
       <h3>Receita</h3>
-      <p class="value">{{ summary.balance | number:'1.2-2' }}</p>
+      <p class="value">{{ summary.balance | number:'1.2-2'}}</p>
       <span>Saldo operacional do periodo</span>
     </div>
     <div class="card tile ganho">
@@ -41,10 +41,10 @@
       <p class="value">{{ summary.ganhos | number:'1.2-2' }}</p>
       <span>{{ filteredTransactionsCount }} movimentacoes filtradas</span>
     </div>
-    <div class="card tile pago">
+    <div class="card tile pago" [class.budget-warning]="isBudgetNearLimit" [class.budget-alert]="isBudgetExceeded">
       <h3>Pagos</h3>
       <p class="value">{{ summary.gastosTotal | number:'1.2-2' }}</p>
-      <span>Gastos registrados</span>
+      <span>{{ paidBudgetMessage }}</span>
     </div>
     <div class="card tile value-total">
       <h3>Value</h3>

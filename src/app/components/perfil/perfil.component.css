@@ -114,6 +114,19 @@
   color: var(--text-muted);
 }
 
+.budget-current {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-muted);
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+}
+
+.budget-current strong {
+  color: var(--accent-strong);
+}
+
 .danger-zone {
   border-color: rgba(239, 68, 68, 0.28);
 }
@@ -198,6 +211,48 @@
   gap: 0.75rem;
 }
 
+.grid-card {
+  background: var(--surface-2);
+  border-radius: 16px;
+  box-shadow: none;
+  display: grid;
+  gap: 0.35rem;
+  grid-template-columns: 4fr;
+  justify-content: stretch;
+  min-height: 8rem;
+  text-align: left;
+  white-space: normal;
+}
+
+.institutions-list {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: 1fr 1fr 1fr;
+  text-align: center;
+}
+
+.remove-btn {
+  align-items: flex-start;
+  background: var(--surface-2);
+  border: 1px solid rgba(239, 68, 68, 0.26);
+  border-radius: 16px;
+  box-shadow: none;
+  color: var(--text);
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.2rem;
+  justify-content: center;
+  width: 100%;
+  white-space: normal;
+}
+
+.remove-btn:hover {
+  background: #fee2e2;
+  border-color: #ef4444;
+  box-shadow: 0 12px 28px rgba(239, 68, 68, 0.16);
+  color: #7f1d1d;
+}
+
 @media (max-width: 780px) {
   .profile-grid {
     grid-template-columns: 1fr;
@@ -217,6 +272,10 @@
 
   .danger-outline {
     min-height: auto;
+  }
+
+  .institutions-list {
+    grid-template-columns: 1fr;
   }
 }
 
